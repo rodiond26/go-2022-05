@@ -1,4 +1,4 @@
-module github.com/fixme_my_friend/hw01_hello_otus
+module github.com/rodiond26/go-2022-05/hw01_hello_otus
 
 go 1.16
 
