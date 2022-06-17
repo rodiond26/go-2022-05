@@ -1,4 +1,4 @@
-module github.com/fixme_my_friend/hw03_frequency_analysis
+module github.com/rodiond26/go-2022-05/hw03_frequency_analysis
 
 go 1.16
 
