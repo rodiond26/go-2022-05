@@ -79,4 +79,10 @@ func TestTop10(t *testing.T) {
 			require.Equal(t, expected, Top10(text))
 		}
 	})
+
+	t.Run("tab characters string", func(t *testing.T) {
+		tabs := "   \n     \t  \t  \t  \n\n    "
+		expected := []string{}
+		require.Equal(t, expected, Top10(tabs))
+	})
 }

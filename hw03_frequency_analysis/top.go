@@ -1,7 +1,6 @@
 package hw03frequencyanalysis
 
 import (
-	"errors"
 	"sort"
 	"strings"
 )
@@ -10,22 +9,16 @@ func Top10(text string) []string {
 	words := countWords(text)
 	rating := rateByCount(words)
 
-	if len(text) == 0 {
-		return topN(rating, 0)
-	} else {
-		return topN(rating, 10)
-	}
+	return topNWords(rating, 10)
 }
-
-var ErrInvalidString = errors.New("invalid string")
 
 func countWords(text string) map[string]int {
 	subStrs := strings.Fields(text)
 	strMap := make(map[string]int)
 	for _, str := range subStrs {
 		_, ok := strMap[str]
-		if ok == true {
-			strMap[str] = strMap[str] + 1
+		if ok {
+			strMap[str]++
 		} else {
 			strMap[str] = 1
 		}
@@ -45,7 +38,10 @@ func rateByCount(words map[string]int) pairs {
 	return pairs
 }
 
-func topN(p pairs, n int) []string {
+func topNWords(p pairs, n int) []string {
+	if len(p) == 0 {
+		return []string{}
+	}
 	top := make([]string, 0)
 	for i := 0; i < len(p) && i < n; i++ {
 		top = append(top, p[i].word)
