@@ -3,7 +3,7 @@ package hw04lrucache
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	require "github.com/stretchr/testify/require"
 )
 
 func TestList(t *testing.T) {
@@ -47,5 +47,22 @@ func TestList(t *testing.T) {
 			elems = append(elems, i.Value.(int))
 		}
 		require.Equal(t, []int{70, 80, 60, 40, 10, 30, 50}, elems)
+	})
+
+	t.Run("add and remove one element", func(t *testing.T) {
+		l := NewList()
+		first := "first"
+		second := 10
+
+		l.PushFront(first)
+		l.Remove(l.Front())
+		l.PushBack(second)
+		l.PushBack(second)
+		l.Remove(l.Back())
+		l.Remove(l.Back())
+
+		require.Equal(t, 0, l.Len())
+		require.Nil(t, l.Front())
+		require.Nil(t, l.Back())
 	})
 }
