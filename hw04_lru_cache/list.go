@@ -41,49 +41,49 @@ func (l *list) Back() *ListItem {
 }
 
 func (l *list) PushFront(v interface{}) *ListItem {
-	newNode := &ListItem{Value: v}
+	newHead := &ListItem{Value: v}
 	switch {
 
 	case l.length == 0:
-		l.head = newNode
-		l.tail = newNode
+		l.head = newHead
+		l.tail = newHead
 
 	case l.length == 1:
-		l.head = newNode
+		l.head = newHead
 		l.head.Next = l.tail
 		l.tail.Prev = l.head
 
 	case l.length > 1:
-		newNode.Next = l.head
-		l.head.Prev = newNode
-		l.head = newNode
+		newHead.Next = l.head
+		l.head.Prev = newHead
+		l.head = newHead
 	}
 
 	l.length++
-	return newNode
+	return newHead
 }
 
 func (l *list) PushBack(v interface{}) *ListItem {
-	newNode := &ListItem{Value: v}
+	newTail := &ListItem{Value: v}
 	switch {
 
 	case l.length == 0:
-		l.head = newNode
-		l.tail = newNode
+		l.head = newTail
+		l.tail = newTail
 
 	case l.length == 1:
-		l.tail = newNode
+		l.tail = newTail
 		l.tail.Prev = l.head
 		l.head.Next = l.tail
 
 	case l.length > 1:
-		newNode.Prev = l.tail
-		l.tail.Next = newNode
-		l.tail = newNode
+		newTail.Prev = l.tail
+		l.tail.Next = newTail
+		l.tail = newTail
 	}
 
 	l.length++
-	return newNode
+	return newTail
 }
 
 func (l *list) Remove(rem *ListItem) {
@@ -119,32 +119,34 @@ func (l *list) Remove(rem *ListItem) {
 	l.length--
 }
 
-func (l *list) MoveToFront(moved *ListItem) {
+func (l *list) MoveToFront(newHead *ListItem) {
 	switch {
 
-	case l.length == 1 || l.head == moved:
+	case l.head == newHead:
 
-	case l.length == 2 && l.tail == moved:
+	case l.length == 1:
+
+	case l.length == 2 && l.tail == newHead:
 		l.head, l.tail = l.tail, l.head
 		l.head.Next = l.tail
 		l.head.Prev = nil
 		l.tail.Prev = l.head
 		l.tail.Next = nil
 
-	case l.length > 2 && l.tail == moved:
+	case l.length > 2 && l.tail == newHead:
 		l.tail = l.tail.Prev
 		l.tail.Next = nil
-		l.head.Prev = moved
-		moved.Next = l.head
-		l.head = moved
+		l.head.Prev = newHead
+		newHead.Next = l.head
+		l.head = newHead
 		l.head.Prev = nil
 
 	default:
-		moved.Prev.Next = moved.Next
-		moved.Next.Prev = moved.Prev
-		l.head.Prev = moved
-		moved.Next = l.head
-		moved.Prev = nil
-		l.head = moved
+		newHead.Prev.Next = newHead.Next
+		newHead.Next.Prev = newHead.Prev
+		l.head.Prev = newHead
+		newHead.Next = l.head
+		newHead.Prev = nil
+		l.head = newHead
 	}
 }
