@@ -49,7 +49,7 @@ func TestList(t *testing.T) {
 		require.Equal(t, []int{70, 80, 60, 40, 10, 30, 50}, elems)
 	})
 
-	t.Run("add and remove one element", func(t *testing.T) {
+	t.Run("add and remove single element", func(t *testing.T) {
 		l := NewList()
 		first := "first"
 		second := 10
@@ -64,5 +64,20 @@ func TestList(t *testing.T) {
 		require.Equal(t, 0, l.Len())
 		require.Nil(t, l.Front())
 		require.Nil(t, l.Back())
+	})
+
+	t.Run("add and remove different type elements", func(t *testing.T) {
+		l := NewList()
+		first := "first"
+		second := 10
+		third := struct{ a string }{a: "third"}
+
+		l.PushFront(first)
+		l.PushFront(second)
+		l.PushFront(third)
+
+		require.Equal(t, first, l.Back().Value)
+		require.Equal(t, second, l.Front().Next.Value)
+		require.Equal(t, third, l.Front().Value)
 	})
 }

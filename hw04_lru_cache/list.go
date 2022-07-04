@@ -10,14 +10,12 @@ type List interface {
 	MoveToFront(i *ListItem)
 }
 
-// Node
 type ListItem struct {
 	Value interface{}
 	Next  *ListItem
 	Prev  *ListItem
 }
 
-// Open doubly linked list
 type list struct {
 	length int
 	head   *ListItem
@@ -43,7 +41,6 @@ func (l *list) Back() *ListItem {
 func (l *list) PushFront(v interface{}) *ListItem {
 	newHead := &ListItem{Value: v}
 	switch {
-
 	case l.length == 0:
 		l.head = newHead
 		l.tail = newHead
@@ -66,7 +63,6 @@ func (l *list) PushFront(v interface{}) *ListItem {
 func (l *list) PushBack(v interface{}) *ListItem {
 	newTail := &ListItem{Value: v}
 	switch {
-
 	case l.length == 0:
 		l.head = newTail
 		l.tail = newTail
@@ -88,7 +84,6 @@ func (l *list) PushBack(v interface{}) *ListItem {
 
 func (l *list) Remove(rem *ListItem) {
 	switch {
-
 	case l.length == 1:
 		l.head = nil
 		l.tail = nil
@@ -121,7 +116,6 @@ func (l *list) Remove(rem *ListItem) {
 
 func (l *list) MoveToFront(newHead *ListItem) {
 	switch {
-
 	case l.head == newHead:
 
 	case l.length == 1:
