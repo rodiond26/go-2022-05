@@ -50,7 +50,52 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c := NewCache(5)
+
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("bbb", 200)
+		require.False(t, wasInCache)
+
+		c.Clear()
+		_, ok := c.Get("aaa")
+		require.False(t, ok)
+	})
+
+	t.Run("rewrite the same elemenet in the cache", func(t *testing.T) {
+		c := NewCache(5)
+
+		for _, v := range [7]int{0, 1, 2, 3, 4, 5, 6} {
+			c.Set("a", v)
+		}
+
+		val, ok := c.Get("a")
+		require.True(t, ok)
+		require.Equal(t, val, 6)
+	})
+
+	t.Run("check capacity of the cache", func(t *testing.T) {
+		c := NewCache(3)
+
+		c.Set("a", 0) // [a: 0]
+		c.Set("b", 1) // [b: 1, a: 0]
+		c.Set("c", 2) // [c: 2, b: 1, a: 0]
+		c.Set("d", 3) // [d: 3, c: 2, b: 1]
+		c.Set("c", 4) // [c: 4, d: 3, b: 1]
+
+		_, ok := c.Get("a")
+		require.False(t, ok)
+
+		val, ok := c.Get("c")
+		require.True(t, ok)
+		require.Equal(t, val, 4)
+		_, ok = c.Get("a")
+		require.False(t, ok)
+
+		c.Clear()
+		_, ok = c.Get("c")
+		require.False(t, ok)
 	})
 }
 
