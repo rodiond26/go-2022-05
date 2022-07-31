@@ -16,7 +16,6 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	}
 
 	out := in
-
 	for _, stage := range stages {
 		out = stage(doStage(out, done))
 	}
