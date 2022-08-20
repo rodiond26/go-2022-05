@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -43,12 +46,22 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		return err
 	}
 
+	size := copyLength(fromPath, offset, limit)
+
+	bar := pb.StartNew(int(size))
+	for i := 0; i < int(size); i++ {
+		bar.Increment()
+		time.Sleep(time.Millisecond)
+	}
+	defer bar.Finish()
+
 	if limit == 0 {
 		written, _ := io.Copy(result, src)
+		time.Sleep(time.Millisecond)
 		fmt.Printf("written %d\n", written)
 	} else {
-		len := copyLength(fromPath, offset, limit)
-		written, _ := io.CopyN(result, src, len)
+		written, _ := io.CopyN(result, src, size)
+		time.Sleep(time.Millisecond)
 		fmt.Printf("written %d\n", written)
 	}
 
