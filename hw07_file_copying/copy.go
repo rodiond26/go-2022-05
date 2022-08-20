@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -38,22 +37,19 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		err = fmt.Errorf("main error [%s], file close error [%s]", err, closeErr)
 	}()
 
-	bufferSize := 100
-	buffer := make([]byte, bufferSize)
-	reader := bufio.NewReader(src)
-	writer := bufio.NewWriter(result)
+	_, err = src.Seek(offset, io.SeekStart)
 
-	for {
-		_, err := reader.Read(buffer)
-		if err != nil {
-			if err != io.EOF {
-				fmt.Println(err)
-			}
-			break
-		}
-		written, err := writer.Write(buffer)
+	if err != nil {
+		return err
+	}
+
+	if limit == 0 {
+		written, _ := io.Copy(result, src)
 		fmt.Printf("written %d\n", written)
-		fmt.Printf("buffer %v\n", buffer)
+	} else {
+		len := copyLength(fromPath, offset, limit)
+		written, _ := io.CopyN(result, src, len)
+		fmt.Printf("written %d\n", written)
 	}
 
 	return nil
@@ -74,9 +70,23 @@ func checkArgs(srcPath, destPath string, offset, limit int64) error {
 	if !fileInfo.Mode().IsRegular() {
 		return ErrUnsupportedFile
 	}
-	if offset < fileInfo.Size() {
+	if offset > fileInfo.Size() {
 		return ErrOffsetExceedsFileSize
 	}
 
 	return nil
+}
+
+func copyLength(srcPath string, offset, limit int64) int64 {
+	fileInfo, _ := os.Stat(srcPath)
+
+	if limit == 0 {
+		return fileInfo.Size() - offset
+	} else {
+		if offset+limit > fileInfo.Size() {
+			return fileInfo.Size() - offset
+		} else {
+			return limit
+		}
+	}
 }

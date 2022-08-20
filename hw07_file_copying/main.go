@@ -21,5 +21,7 @@ func main() {
 	flag.Parse()
 
 	err := Copy(from, to, offset, limit)
-	fmt.Printf("script error [%s]\n", err)
+	if err != nil {
+		fmt.Printf("script error [%s]\n", err)
+	}
 }
