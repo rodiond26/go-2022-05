@@ -37,8 +37,8 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	toWrite := copyLength(fromPath, offset, limit)
 	var buffer int64 = 7
-	var written int64 = 0
-	var sum int64 = 0
+	var written int64
+	var sum int64
 
 	for toWrite-sum > buffer {
 		written, err = io.CopyN(result, src, buffer)
