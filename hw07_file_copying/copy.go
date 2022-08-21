@@ -2,12 +2,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
-	"time"
-
-	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -26,44 +22,48 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		closeErr := src.Close()
-		err = fmt.Errorf("main error [%s], file close error [%s]", err, closeErr)
-	}()
+	defer src.Close()
 
 	result, err := os.Create(toPath)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		closeErr := result.Close()
-		err = fmt.Errorf("main error [%s], file close error [%s]", err, closeErr)
-	}()
+	defer result.Close()
 
 	_, err = src.Seek(offset, io.SeekStart)
-
 	if err != nil {
 		return err
 	}
 
-	size := copyLength(fromPath, offset, limit)
+	toWrite := copyLength(fromPath, offset, limit)
+	var buffer int64 = 7
+	var written int64 = 0
+	var sum int64 = 0
 
-	bar := pb.StartNew(int(size))
-	for i := 0; i < int(size); i++ {
-		bar.Increment()
-		time.Sleep(time.Millisecond)
+	for toWrite-sum > buffer {
+		written, err = io.CopyN(result, src, buffer)
+		sum += written
+		printProgressBar(sum, toWrite)
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
+		}
 	}
-	defer bar.Finish()
 
-	if limit == 0 {
-		written, _ := io.Copy(result, src)
-		time.Sleep(time.Millisecond)
-		fmt.Printf("written %d\n", written)
-	} else {
-		written, _ := io.CopyN(result, src, size)
-		time.Sleep(time.Millisecond)
-		fmt.Printf("written %d\n", written)
+	if toWrite-sum != 0 {
+		buffer = toWrite - sum
+		written, err := io.CopyN(result, src, buffer)
+		sum += written
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			return err
+		}
 	}
+	printProgressBar(sum, toWrite)
 
 	return nil
 }
