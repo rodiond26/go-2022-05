@@ -19,7 +19,6 @@ func init() {
 }
 
 func main() {
-
 	err := Copy(from, to, offset, limit)
 	if err != nil {
 		fmt.Printf("script error [%s]\n", err)
