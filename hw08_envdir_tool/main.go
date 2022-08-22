@@ -1,9 +1,15 @@
 package main
 
-import "os"
+import (
+	"os"
+)
 
 func main() {
 	args := os.Args
+	if len(args) < 3 {
+		os.Exit(unsuccessfulEnvdirCode)
+	}
+
 	dirPath := args[1]
 	childCmdWithArgs := args[2:]
 
@@ -11,6 +17,7 @@ func main() {
 	if err != nil {
 		os.Exit(unsuccessfulEnvdirCode)
 	}
+
 	exitCode := RunCmd(childCmdWithArgs, envValues)
 	os.Exit(exitCode)
 }

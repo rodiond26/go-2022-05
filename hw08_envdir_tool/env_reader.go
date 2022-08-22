@@ -29,7 +29,6 @@ func ReadDir(dirPath string) (Environment, error) {
 		if entry.IsDir() {
 			continue
 		}
-
 		if err = checkName(entry.Name()); err != nil {
 			args[entry.Name()] = EnvValue{Value: "", NeedRemove: true}
 			continue
@@ -40,7 +39,7 @@ func ReadDir(dirPath string) (Environment, error) {
 
 		rawArg, err := nextRawArg(dirPath, entry.Name())
 		if err != nil {
-			return nil, err
+			args[entry.Name()] = EnvValue{Value: "", NeedRemove: true}
 		}
 
 		arg := cleanRawArg(rawArg)
@@ -58,13 +57,14 @@ func checkName(name string) error {
 }
 
 func checkSize(entry os.DirEntry) error {
-	if fileInfo, err := entry.Info(); err != nil {
+	fileInfo, err := entry.Info()
+	if err != nil {
 		return err
-	} else if fileInfo.Size() == 0 {
-		return fmt.Errorf("incorrect file size [%s]", entry.Name())
-	} else {
-		return nil
 	}
+	if fileInfo.Size() == 0 {
+		return fmt.Errorf("incorrect file size [%s]", entry.Name())
+	}
+	return nil
 }
 
 func nextRawArg(dirPath, fileName string) (string, error) {
@@ -72,10 +72,7 @@ func nextRawArg(dirPath, fileName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer func() {
-		closeErr := file.Close()
-		err = fmt.Errorf("main error [%s], file [%s] close error [%s]", err, fileName, closeErr)
-	}()
+	defer file.Close()
 
 	rawArg, _, err := bufio.NewReader(file).ReadLine()
 	if err != nil {

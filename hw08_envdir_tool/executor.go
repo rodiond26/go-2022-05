@@ -6,7 +6,6 @@ import (
 )
 
 const (
-	// return codes
 	successCode            = 0
 	unsuccessfulChildCode  = 1
 	unsuccessfulEnvdirCode = 111
