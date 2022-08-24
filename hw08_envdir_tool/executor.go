@@ -27,14 +27,15 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 			if _, ok := os.LookupEnv(key); ok {
 				_ = os.Unsetenv(key)
 			}
-		} else {
-			if _, ok := os.LookupEnv(key); ok {
-				_ = os.Unsetenv(key)
-			}
-			err := os.Setenv(key, envValue.Value)
-			if err != nil {
-				return unsuccessfulEnvdirCode
-			}
+			continue
+		}
+		if _, ok := os.LookupEnv(key); ok {
+			_ = os.Unsetenv(key)
+		}
+
+		err := os.Setenv(key, envValue.Value)
+		if err != nil {
+			return unsuccessfulEnvdirCode
 		}
 	}
 
