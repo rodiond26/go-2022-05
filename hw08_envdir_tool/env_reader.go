@@ -41,6 +41,7 @@ func ReadDir(dirPath string) (Environment, error) {
 		rawArg, err := nextRawArg(dirPath, entry.Name())
 		if err != nil {
 			args[entry.Name()] = EnvValue{Value: "", NeedRemove: true}
+			continue
 		}
 
 		arg := cleanRawArg(rawArg)
