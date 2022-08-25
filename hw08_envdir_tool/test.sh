@@ -21,5 +21,5 @@ arguments are arg1=1 arg2=2'
 
 [ "${result}" = "${expected}" ] || (echo -e "invalid output: ${result}" && exit 1)
 
-rm -f go-envdir
+rm -f go-envdir hw08_envdir_tool
 echo "PASS"
