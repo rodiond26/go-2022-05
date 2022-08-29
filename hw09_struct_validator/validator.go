@@ -1,7 +1,6 @@
 package hw09structvalidator
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -21,40 +20,41 @@ func (v ValidationErrors) Error() string {
 }
 
 func Validate(v interface{}) error {
-	s := reflect.ValueOf(v)
-	if s.IsNil() {
-		return nil // TODO fix
+	if v == nil {
+		return nil
 	}
-	if s.Kind() != reflect.Struct {
+	vType := reflect.TypeOf(v)          // отражение типа
+	if vType.Kind() != reflect.Struct { // тип данных
 		return nil // TODO fix
 	}
 
-	vType := s.Type()
 	for i := 0; i < vType.NumField(); i++ {
-		field := vType.Field(i)
+		field := vType.Field(i) // поле структуры по индексу
+		if field.Tag == "" {
+			// TODO ?
+			continue
+		}
 		tag := field.Tag.Get(validateTag)
 		if tag == "" {
 			// TODO ?
 			continue
 		}
-		err := validateField(field.Name, validateTag, vType.Field(i))
-		fmt.Println(err) // TODO delete
+
+		value := reflect.ValueOf(v).Field(i)
+		if field.Type.Kind() == reflect.String {
+			err := validateString(field, value, tag)
+			_ = err // TODO fix
+		}
+
 	}
 
 	return nil // TODO fix
 }
 
-func validateField(fieldName, validateTag string, field reflect.StructField) error {
+func validateString(field reflect.StructField, value reflect.Value, tag string) error {
+	f := field.Name
+	v := value.String()
+	_ = f      // TODO fix
+	_ = v      // TODO fix
 	return nil // TODO fix
-
-}
-
-type App1 struct {
-	Version string `validate:"len:5"`
-}
-
-func main() {
-	app1 := App1{Version: "123"}
-	err := Validate(app1)
-	fmt.Println(err)
 }
