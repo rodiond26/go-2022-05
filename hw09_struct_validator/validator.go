@@ -198,18 +198,14 @@ func validateSlice(field reflect.StructField, sliceValue reflect.Value, tags []s
 		value := sliceValue.Index(i)
 		if value.Kind() == reflect.String {
 			err := validateString(field.Name, value.String(), tags)
-			if err != nil {
-				for j := range err {
-					errs = append(errs, toValidationError(field.Name, err[j]))
-				}
+			for j := range err {
+				errs = append(errs, toValidationError(field.Name, err[j]))
 			}
 		}
 		if value.Kind() == reflect.Int {
 			err := validateInt64(field.Name, value.Int(), tags)
-			if err != nil {
-				for j := range err {
-					errs = append(errs, toValidationError(field.Name, err[j]))
-				}
+			for j := range err {
+				errs = append(errs, toValidationError(field.Name, err[j]))
 			}
 		}
 	}
