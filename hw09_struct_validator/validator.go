@@ -1,7 +1,6 @@
 package hw09structvalidator
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -29,6 +28,7 @@ const (
 	minTag       = "min"
 	maxTag       = "max"
 	empty        = ""
+	dash         = "-"
 )
 
 type ValidationError struct {
@@ -64,44 +64,38 @@ func Validate(v interface{}) error {
 	errs := make(ValidationErrors, 0)
 
 	if typeOfV.Kind() != reflect.Struct {
-		return ValidationError{Field: "", Err: errors.New("the object is not a struct")}
+		return validationError("the object is not a struct", "", "")
 	}
 
 	for i := 0; i < typeOfV.NumField(); i++ {
 		field := typeOfV.Field(i)
-		if field.Tag == "" {
+		if field.Tag == empty {
 			continue
 		}
 		tag := field.Tag.Get(validateTag)
-		if tag == "" || tag == "-" {
+		if tag == empty || tag == dash {
 			continue
 		}
 
 		tags := toStringSlice(tag, tagSeparator)
 		if field.Type.Kind() == reflect.String {
 			err := validateString(field.Name, valueOfV.Field(i).String(), tags)
-			if err != nil {
-				for j := range err {
-					errs = append(errs, toValidationError(field.Name, err[j]))
-				}
+			for j := range err {
+				errs = append(errs, toValidationError(field.Name, err[j]))
 			}
 			continue
 		}
 		if field.Type.Kind() == reflect.Int {
 			err := validateInt64(field.Name, valueOfV.Field(i).Int(), tags)
-			if err != nil {
-				for j := range err {
-					errs = append(errs, toValidationError(field.Name, err[j]))
-				}
+			for j := range err {
+				errs = append(errs, toValidationError(field.Name, err[j]))
 			}
 			continue
 		}
 		if field.Type.Kind() == reflect.Slice {
 			err := validateSlice(field, valueOfV.Field(i), tags)
-			if err != nil {
-				for j := range err {
-					errs = append(errs, toValidationError(field.Name, err[j]))
-				}
+			for j := range err {
+				errs = append(errs, toValidationError(field.Name, err[j]))
 			}
 		}
 	}
@@ -138,21 +132,21 @@ func validateString(fieldName, fieldValue string, tags []string) []error {
 		case Length:
 			validLength, err := strconv.Atoi(tagValue)
 			if err != nil {
-				errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+				errs = append(errs, validationError(fieldName, fieldValue, tagValue))
 				continue
 			}
 			if len(fieldValue) != validLength {
-				errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+				errs = append(errs, validationError(fieldName, fieldValue, tagValue))
 			}
 		case RegExp:
 			isMatched, _ := regexp.MatchString(tagValue, fieldValue)
 			if !isMatched {
-				errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+				errs = append(errs, validationError(fieldName, fieldValue, tagValue))
 			}
 		case In:
 			tagValues := toStringSlice(tagValue, inSeparator)
 			if !containsString(tagValues, fieldValue) {
-				errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+				errs = append(errs, validationError(fieldName, fieldValue, tagValue))
 			}
 		default:
 			continue
@@ -167,29 +161,29 @@ func validateInt64(fieldName string, fieldValue int64, tags []string) []error {
 		tagType, tagValue := getTypeAndValueOfTag(tag)
 		switch tagType {
 		case NotValid:
-			errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+			errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
 		case Min:
 			min, err := strconv.Atoi(tagValue)
 			if err != nil {
-				errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
 				continue
 			}
 			if fieldValue < int64(min) {
-				errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
 			}
 		case Max:
 			max, err := strconv.Atoi(tagValue)
 			if err != nil {
-				errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
 				continue
 			}
 			if fieldValue > int64(max) {
-				errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
 			}
 		case In:
 			tagValues := toInt64Slice(tagValue, inSeparator)
 			if !containsInt64(tagValues, fieldValue) {
-				errs = append(errs, validationError(fieldName, string(fieldValue), tagValue))
+				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
 			}
 		default:
 			continue
