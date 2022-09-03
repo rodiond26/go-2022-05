@@ -1,6 +1,7 @@
 package hw09structvalidator
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -29,6 +30,12 @@ const (
 	maxTag       = "max"
 	empty        = ""
 	dash         = "-"
+)
+
+var (
+	ErrObjectIsNotStruct    = errors.New("the object is not a struct")
+	ErrInvalidStringLength  = errors.New("string length is invalid")
+	ErrStringNotMatchRegexp = errors.New("string is not matched by regexp")
 )
 
 type ValidationError struct {
@@ -64,7 +71,7 @@ func Validate(v interface{}) error {
 	errs := make(ValidationErrors, 0)
 
 	if typeOfV.Kind() != reflect.Struct {
-		return validationError("the object is not a struct", "", "")
+		return ErrObjectIsNotStruct
 	}
 
 	for i := 0; i < typeOfV.NumField(); i++ {
@@ -99,7 +106,11 @@ func Validate(v interface{}) error {
 			}
 		}
 	}
-	return errs
+
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
 }
 
 type TagType int
@@ -136,12 +147,12 @@ func validateString(fieldName, fieldValue string, tags []string) []error {
 				continue
 			}
 			if len(fieldValue) != validLength {
-				errs = append(errs, validationError(fieldName, fieldValue, tagValue))
+				errs = append(errs, ErrInvalidStringLength)
 			}
 		case RegExp:
 			isMatched, _ := regexp.MatchString(tagValue, fieldValue)
 			if !isMatched {
-				errs = append(errs, validationError(fieldName, fieldValue, tagValue))
+				errs = append(errs, ErrStringNotMatchRegexp)
 			}
 		case In:
 			tagValues := toStringSlice(tagValue, inSeparator)
@@ -282,3 +293,31 @@ func validationError(fieldName, fieldValue, tag string) error {
 func toValidationError(fieldName string, errorMsg error) ValidationError {
 	return ValidationError{Field: fieldName, Err: errorMsg}
 }
+
+// type TestTa1g struct {
+// 	CheckLenValue      string `validate:"len:10"`
+// 	CheckRegExpValue   string `validate:"regexp:^\\d+$"`
+// 	CheckEmailValue    string `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
+// 	CheckStringInValue string `validate:"in:foo,bar"`
+// 	CheckMinValue      int    `validate:"min:18"`
+// 	CheckMaxValue      int    `validate:"max:50"`
+// 	CheckIntInValue    int    `validate:"in:100,500"`
+// }
+
+// func main() {
+// 	testTa1g := TestTa1g{
+// 		CheckLenValue:      "1234567890",
+// 		CheckRegExpValue:   "h",
+// 		CheckEmailValue:    "mail@mail.com",
+// 		CheckStringInValue: "foo",
+// 		CheckMinValue:      20,
+// 		CheckMaxValue:      20,
+// 		CheckIntInValue:    100,
+// 	}
+// 	v1 := Validate(testTa1g)
+// 	fmt.Println(v1)
+
+// 	var people []string
+// 	v2 := Validate(people)
+// 	fmt.Println(v2)
+// }
