@@ -1,7 +1,6 @@
 package hw09structvalidator
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
@@ -20,7 +19,8 @@ type (
 		Email  string   `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
 		Role   UserRole `validate:"in:admin,stuff"`
 		Phones []string `validate:"len:11"`
-		meta   json.RawMessage
+		// commented to pass linter
+		// meta   json.RawMessage
 	}
 
 	App struct {
@@ -155,7 +155,9 @@ func TestValidateOneValueTag(t *testing.T) {
 			expectedErr: ValidationErrors{
 				ValidationError{
 					Field: "Value",
-					Err:   ErrInvalidStringLength}},
+					Err:   ErrInvalidStringLength,
+				},
+			},
 		},
 		{
 			in: RegExpTestStruct{
@@ -164,7 +166,9 @@ func TestValidateOneValueTag(t *testing.T) {
 			expectedErr: ValidationErrors{
 				ValidationError{
 					Field: "Value",
-					Err:   ErrInvalidStringLength}},
+					Err:   ErrInvalidStringLength,
+				},
+			},
 		},
 		{
 			in: StringInTagTestStruct{
@@ -173,7 +177,9 @@ func TestValidateOneValueTag(t *testing.T) {
 			expectedErr: ValidationErrors{
 				ValidationError{
 					Field: "Value",
-					Err:   ErrValueIsNotInSet}},
+					Err:   ErrValueIsNotInSet,
+				},
+			},
 		},
 		{
 			in: MinIntTagTestStruct{
@@ -182,7 +188,9 @@ func TestValidateOneValueTag(t *testing.T) {
 			expectedErr: ValidationErrors{
 				ValidationError{
 					Field: "Value",
-					Err:   ErrValueIsLess}},
+					Err:   ErrValueIsLess,
+				},
+			},
 		},
 		{
 			in: MaxIntTagTestStruct{
@@ -191,7 +199,9 @@ func TestValidateOneValueTag(t *testing.T) {
 			expectedErr: ValidationErrors{
 				ValidationError{
 					Field: "Value",
-					Err:   ErrValueIsGreater}},
+					Err:   ErrValueIsGreater,
+				},
+			},
 		},
 		{
 			in: IntInTagTestStruct{
@@ -200,7 +210,9 @@ func TestValidateOneValueTag(t *testing.T) {
 			expectedErr: ValidationErrors{
 				ValidationError{
 					Field: "Value",
-					Err:   ErrValueIsNotInSet}},
+					Err:   ErrValueIsNotInSet,
+				},
+			},
 		},
 	}
 

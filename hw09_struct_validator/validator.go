@@ -122,15 +122,15 @@ func getTypeAndValueOfTag(tag string) (TagType, string) {
 	prefix := before(tag, tagBorder)
 	switch prefix {
 	case lengthTag:
-		return Length, after(tag, tagBorder)
+		return Length, tagValue(tag)
 	case regexpTag:
-		return RegExp, after(tag, tagBorder)
+		return RegExp, tagValue(tag)
 	case inTag:
-		return In, after(tag, tagBorder)
+		return In, tagValue(tag)
 	case minTag:
-		return Min, after(tag, tagBorder)
+		return Min, tagValue(tag)
 	case maxTag:
-		return Max, after(tag, tagBorder)
+		return Max, tagValue(tag)
 	default:
 		return NotValid, tag
 	}
@@ -240,7 +240,8 @@ func before(str, substr string) string {
 }
 
 // after returns substring after a string.
-func after(str, substr string) string {
+func tagValue(str string) string {
+	substr := tagBorder
 	pos := strings.LastIndex(str, substr)
 	if pos == -1 {
 		return empty
