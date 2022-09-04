@@ -1,6 +1,7 @@
 package hw09structvalidator
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"reflect"
@@ -36,6 +37,9 @@ var (
 	ErrObjectIsNotStruct    = errors.New("the object is not a struct")
 	ErrInvalidStringLength  = errors.New("string length is invalid")
 	ErrStringNotMatchRegexp = errors.New("string is not matched by regexp")
+	ErrValueIsNotInSet      = errors.New("value is not in validation set")
+	ErrValueIsLess          = errors.New("value is less than min")
+	ErrValueIsGreater       = errors.New("value is greater than max")
 )
 
 type ValidationError struct {
@@ -46,20 +50,21 @@ type ValidationError struct {
 type ValidationErrors []ValidationError
 
 func (v ValidationErrors) Error() string {
-	if len(v) == 0 {
-		return "no validation errors"
+	if len(v) < 1 {
+		return "there are not validation errors"
 	}
-
-	var sb strings.Builder
+	buf := bytes.NewBufferString("")
 	for i := 0; i < len(v); i++ {
-		sb.WriteString(fmt.Sprintf("Field: %s; Error(s): %s", v[i].Field, v[i].Err))
-		sb.WriteString("\n")
+		text := fmt.Sprintf("Field: %s; Error: %s",
+			v[i].Field, v[i].Err)
+		buf.WriteString(text)
+		buf.WriteString("\n")
 	}
-	return sb.String()
+	return buf.String()
 }
 
 func (v ValidationError) Error() string {
-	return fmt.Sprintf("Field [%s] error [%s]", v.Field, v.Err)
+	return fmt.Sprintf("Field: %s, error: %s", v.Field, v.Err)
 }
 
 func Validate(v interface{}) error {
@@ -157,8 +162,10 @@ func validateString(fieldName, fieldValue string, tags []string) []error {
 		case In:
 			tagValues := toStringSlice(tagValue, inSeparator)
 			if !containsString(tagValues, fieldValue) {
-				errs = append(errs, validationError(fieldName, fieldValue, tagValue))
+				errs = append(errs, ErrValueIsNotInSet)
 			}
+		case Min:
+		case Max:
 		default:
 			continue
 		}
@@ -180,7 +187,7 @@ func validateInt64(fieldName string, fieldValue int64, tags []string) []error {
 				continue
 			}
 			if fieldValue < int64(min) {
-				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
+				errs = append(errs, ErrValueIsLess)
 			}
 		case Max:
 			max, err := strconv.Atoi(tagValue)
@@ -189,13 +196,15 @@ func validateInt64(fieldName string, fieldValue int64, tags []string) []error {
 				continue
 			}
 			if fieldValue > int64(max) {
-				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
+				errs = append(errs, ErrValueIsGreater)
 			}
 		case In:
 			tagValues := toInt64Slice(tagValue, inSeparator)
 			if !containsInt64(tagValues, fieldValue) {
-				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
+				errs = append(errs, ErrValueIsNotInSet)
 			}
+		case Length:
+		case RegExp:
 		default:
 			continue
 		}
@@ -293,31 +302,3 @@ func validationError(fieldName, fieldValue, tag string) error {
 func toValidationError(fieldName string, errorMsg error) ValidationError {
 	return ValidationError{Field: fieldName, Err: errorMsg}
 }
-
-// type TestTa1g struct {
-// 	CheckLenValue      string `validate:"len:10"`
-// 	CheckRegExpValue   string `validate:"regexp:^\\d+$"`
-// 	CheckEmailValue    string `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
-// 	CheckStringInValue string `validate:"in:foo,bar"`
-// 	CheckMinValue      int    `validate:"min:18"`
-// 	CheckMaxValue      int    `validate:"max:50"`
-// 	CheckIntInValue    int    `validate:"in:100,500"`
-// }
-
-// func main() {
-// 	testTa1g := TestTa1g{
-// 		CheckLenValue:      "1234567890",
-// 		CheckRegExpValue:   "h",
-// 		CheckEmailValue:    "mail@mail.com",
-// 		CheckStringInValue: "foo",
-// 		CheckMinValue:      20,
-// 		CheckMaxValue:      20,
-// 		CheckIntInValue:    100,
-// 	}
-// 	v1 := Validate(testTa1g)
-// 	fmt.Println(v1)
-
-// 	var people []string
-// 	v2 := Validate(people)
-// 	fmt.Println(v2)
-// }

@@ -58,14 +58,16 @@ type (
 		Value string `validate:"in:foo,bar"`
 	}
 
-	TestTag struct {
-		CheckLenValue      string `validate:"len:10"`
-		CheckRegExpValue   string `validate:"regexp:^\\d+$"`
-		CheckEmailValue    string `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
-		CheckStringInValue string `validate:"in:foo,bar"`
-		CheckMinValue      int    `validate:"min:18"`
-		CheckMaxValue      int    `validate:"max:50"`
-		CheckIntInValue    int    `validate:"in:100,500"`
+	MinIntTagTestStruct struct {
+		Value int `validate:"min:18"`
+	}
+
+	MaxIntTagTestStruct struct {
+		Value int `validate:"max:10"`
+	}
+
+	IntInTagTestStruct struct {
+		Value int `validate:"in:200,404,500"`
 	}
 )
 
@@ -89,6 +91,12 @@ func TestValidate(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
+			in: SliceTestStruct{
+				Value: []string{"foo", "bar"},
+			},
+			expectedErr: nil,
+		},
+		{
 			in: LenTestStruct{
 				Value: "qwerty",
 			},
@@ -99,6 +107,12 @@ func TestValidate(t *testing.T) {
 				Value: "qwerty1",
 			},
 			expectedErr: ErrInvalidStringLength,
+		},
+		{
+			in: RegExpTestStruct{
+				Value: "1234",
+			},
+			expectedErr: nil,
 		},
 		{
 			in: RegExpTestStruct{
@@ -113,16 +127,46 @@ func TestValidate(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			in: TestTag{
-				CheckLenValue:      "1234567890",
-				CheckRegExpValue:   "1234567890",
-				CheckEmailValue:    "mail@mail.com",
-				CheckStringInValue: "foo",
-				CheckMinValue:      20,
-				CheckMaxValue:      20,
-				CheckIntInValue:    100,
+			in: StringInTagTestStruct{
+				Value: "notFoo",
+			},
+			expectedErr: ErrValueIsNotInSet,
+		},
+		{
+			in: MinIntTagTestStruct{
+				Value: 100,
 			},
 			expectedErr: nil,
+		},
+		{
+			in: MinIntTagTestStruct{
+				Value: 0,
+			},
+			expectedErr: ErrValueIsLess,
+		},
+		{
+			in: MaxIntTagTestStruct{
+				Value: 0,
+			},
+			expectedErr: nil,
+		},
+		{
+			in: MaxIntTagTestStruct{
+				Value: 100,
+			},
+			expectedErr: ErrValueIsGreater,
+		},
+		{
+			in: IntInTagTestStruct{
+				Value: 200,
+			},
+			expectedErr: nil,
+		},
+		{
+			in: IntInTagTestStruct{
+				Value: 100,
+			},
+			expectedErr: ErrValueIsNotInSet,
 		},
 	}
 
