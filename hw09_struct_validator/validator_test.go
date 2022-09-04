@@ -71,7 +71,7 @@ type (
 	}
 )
 
-func TestValidate(t *testing.T) {
+func TestValidateWithoutErrors(t *testing.T) {
 	tests := []struct {
 		in          interface{}
 		expectedErr error
@@ -79,10 +79,6 @@ func TestValidate(t *testing.T) {
 		{
 			in:          nil,
 			expectedErr: nil,
-		},
-		{
-			in:          "String is not a struct",
-			expectedErr: ErrObjectIsNotStruct,
 		},
 		{
 			in: SimpleTestStruct{
@@ -103,22 +99,10 @@ func TestValidate(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			in: LenTestStruct{
-				Value: "qwerty1",
-			},
-			expectedErr: ErrInvalidStringLength,
-		},
-		{
 			in: RegExpTestStruct{
 				Value: "1234",
 			},
 			expectedErr: nil,
-		},
-		{
-			in: RegExpTestStruct{
-				Value: "1234a",
-			},
-			expectedErr: ErrStringNotMatchRegexp,
 		},
 		{
 			in: StringInTagTestStruct{
@@ -127,34 +111,16 @@ func TestValidate(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			in: StringInTagTestStruct{
-				Value: "notFoo",
-			},
-			expectedErr: ErrValueIsNotInSet,
-		},
-		{
 			in: MinIntTagTestStruct{
 				Value: 100,
 			},
 			expectedErr: nil,
 		},
 		{
-			in: MinIntTagTestStruct{
-				Value: 0,
-			},
-			expectedErr: ErrValueIsLess,
-		},
-		{
 			in: MaxIntTagTestStruct{
 				Value: 0,
 			},
 			expectedErr: nil,
-		},
-		{
-			in: MaxIntTagTestStruct{
-				Value: 100,
-			},
-			expectedErr: ErrValueIsGreater,
 		},
 		{
 			in: IntInTagTestStruct{
@@ -162,34 +128,97 @@ func TestValidate(t *testing.T) {
 			},
 			expectedErr: nil,
 		},
-		{
-			in: IntInTagTestStruct{
-				Value: 100,
-			},
-			expectedErr: ErrValueIsNotInSet,
-		},
 	}
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
 			t.Parallel()
 			actualErrors := Validate(tt.in)
+			require.NoError(t, actualErrors)
+		})
+	}
+}
 
-			if tt.expectedErr == nil {
-				require.NoError(t, actualErrors)
-			} else {
-				require.NotEmpty(t, actualErrors)
-				var validationErrors ValidationErrors
+func TestValidateOneValueTag(t *testing.T) {
+	tests := []struct {
+		in          interface{}
+		expectedErr error
+	}{
+		{
+			in:          "String is not a struct",
+			expectedErr: ErrObjectIsNotStruct,
+		},
+		{
+			in: LenTestStruct{
+				Value: "qwerty1",
+			},
+			expectedErr: ValidationErrors{
+				ValidationError{
+					Field: "Value",
+					Err:   ErrInvalidStringLength}},
+		},
+		{
+			in: RegExpTestStruct{
+				Value: "1234a",
+			},
+			expectedErr: ValidationErrors{
+				ValidationError{
+					Field: "Value",
+					Err:   ErrInvalidStringLength}},
+		},
+		{
+			in: StringInTagTestStruct{
+				Value: "notFoo",
+			},
+			expectedErr: ValidationErrors{
+				ValidationError{
+					Field: "Value",
+					Err:   ErrValueIsNotInSet}},
+		},
+		{
+			in: MinIntTagTestStruct{
+				Value: 0,
+			},
+			expectedErr: ValidationErrors{
+				ValidationError{
+					Field: "Value",
+					Err:   ErrValueIsLess}},
+		},
+		{
+			in: MaxIntTagTestStruct{
+				Value: 100,
+			},
+			expectedErr: ValidationErrors{
+				ValidationError{
+					Field: "Value",
+					Err:   ErrValueIsGreater}},
+		},
+		{
+			in: IntInTagTestStruct{
+				Value: 100,
+			},
+			expectedErr: ValidationErrors{
+				ValidationError{
+					Field: "Value",
+					Err:   ErrValueIsNotInSet}},
+		},
+	}
 
-				if errors.As(actualErrors, &validationErrors) {
-					var expectedErrors ValidationErrors
-					require.ErrorAs(t, tt.expectedErr, &expectedErrors)
+	for i, testCase := range tests {
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
+			t.Parallel()
+			actualErrors := Validate(testCase.in)
+			require.NotEmpty(t, actualErrors)
 
-					for j, err := range validationErrors {
-						require.ErrorIs(t, err, validationErrors[j])
-					}
+			var validationErrors ValidationErrors
+			if errors.As(actualErrors, &validationErrors) {
+				var expectedErrors ValidationErrors
+				require.ErrorAs(t, testCase.expectedErr, &expectedErrors)
+				for j, err := range validationErrors {
+					require.ErrorIs(t, err, validationErrors[j])
 				}
-				require.ErrorIs(t, actualErrors, tt.expectedErr)
+			} else {
+				require.ErrorIs(t, actualErrors, testCase.expectedErr)
 			}
 		})
 	}

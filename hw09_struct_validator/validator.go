@@ -1,7 +1,6 @@
 package hw09structvalidator
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"reflect"
@@ -50,21 +49,20 @@ type ValidationError struct {
 type ValidationErrors []ValidationError
 
 func (v ValidationErrors) Error() string {
-	if len(v) < 1 {
-		return "there are not validation errors"
+	if len(v) == 0 {
+		return "no validation errors"
 	}
-	buf := bytes.NewBufferString("")
+
+	var sb strings.Builder
 	for i := 0; i < len(v); i++ {
-		text := fmt.Sprintf("Field: %s; Error: %s",
-			v[i].Field, v[i].Err)
-		buf.WriteString(text)
-		buf.WriteString("\n")
+		sb.WriteString(fmt.Sprintf("Field [%v], error [%v]", v[i].Field, v[i].Err))
+		// sb.WriteString("\n")
 	}
-	return buf.String()
+	return sb.String()
 }
 
 func (v ValidationError) Error() string {
-	return fmt.Sprintf("Field: %s, error: %s", v.Field, v.Err)
+	return fmt.Sprintf("Field [%v], error [%v]", v.Field, v.Err)
 }
 
 func Validate(v interface{}) error {
