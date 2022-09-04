@@ -39,6 +39,7 @@ var (
 	ErrValueIsNotInSet      = errors.New("value is not in validation set")
 	ErrValueIsLess          = errors.New("value is less than min")
 	ErrValueIsGreater       = errors.New("value is greater than max")
+	ErrBadValidateTag       = errors.New("invalid validate tag")
 )
 
 type ValidationError struct {
@@ -55,14 +56,13 @@ func (v ValidationErrors) Error() string {
 
 	var sb strings.Builder
 	for i := 0; i < len(v); i++ {
-		sb.WriteString(fmt.Sprintf("Field [%v], error [%v]", v[i].Field, v[i].Err))
-		// sb.WriteString("\n")
+		sb.WriteString(fmt.Sprintf("Field [%v] \terror [%v]\n", v[i].Field, v[i].Err))
 	}
 	return sb.String()
 }
 
 func (v ValidationError) Error() string {
-	return fmt.Sprintf("Field [%v], error [%v]", v.Field, v.Err)
+	return fmt.Sprintf("Field [%v] \terror [%v]\n", v.Field, v.Err)
 }
 
 func Validate(v interface{}) error {
@@ -89,14 +89,14 @@ func Validate(v interface{}) error {
 
 		tags := toStringSlice(tag, tagSeparator)
 		if field.Type.Kind() == reflect.String {
-			err := validateString(field.Name, valueOfV.Field(i).String(), tags)
+			err := validateString(valueOfV.Field(i).String(), tags)
 			for j := range err {
 				errs = append(errs, toValidationError(field.Name, err[j]))
 			}
 			continue
 		}
 		if field.Type.Kind() == reflect.Int {
-			err := validateInt64(field.Name, valueOfV.Field(i).Int(), tags)
+			err := validateInt64(valueOfV.Field(i).Int(), tags)
 			for j := range err {
 				errs = append(errs, toValidationError(field.Name, err[j]))
 			}
@@ -105,7 +105,7 @@ func Validate(v interface{}) error {
 		if field.Type.Kind() == reflect.Slice {
 			err := validateSlice(field, valueOfV.Field(i), tags)
 			for j := range err {
-				errs = append(errs, toValidationError(field.Name, err[j]))
+				errs = append(errs, err[j])
 			}
 		}
 	}
@@ -136,17 +136,17 @@ func getTypeAndValueOfTag(tag string) (TagType, string) {
 	}
 }
 
-func validateString(fieldName, fieldValue string, tags []string) []error {
+func validateString(fieldValue string, tags []string) []error {
 	errs := make([]error, 0)
 	for _, tag := range tags {
 		tagType, tagValue := getTypeAndValueOfTag(tag)
 		switch tagType {
 		case NotValid:
-			errs = append(errs, validationError(fieldName, fieldValue, tagValue))
+			errs = append(errs, ErrBadValidateTag)
 		case Length:
 			validLength, err := strconv.Atoi(tagValue)
 			if err != nil {
-				errs = append(errs, validationError(fieldName, fieldValue, tagValue))
+				errs = append(errs, ErrBadValidateTag)
 				continue
 			}
 			if len(fieldValue) != validLength {
@@ -171,17 +171,17 @@ func validateString(fieldName, fieldValue string, tags []string) []error {
 	return errs
 }
 
-func validateInt64(fieldName string, fieldValue int64, tags []string) []error {
+func validateInt64(fieldValue int64, tags []string) []error {
 	errs := make([]error, 0)
 	for _, tag := range tags {
 		tagType, tagValue := getTypeAndValueOfTag(tag)
 		switch tagType {
 		case NotValid:
-			errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
+			errs = append(errs, ErrBadValidateTag)
 		case Min:
 			min, err := strconv.Atoi(tagValue)
 			if err != nil {
-				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
+				errs = append(errs, ErrBadValidateTag)
 				continue
 			}
 			if fieldValue < int64(min) {
@@ -190,7 +190,7 @@ func validateInt64(fieldName string, fieldValue int64, tags []string) []error {
 		case Max:
 			max, err := strconv.Atoi(tagValue)
 			if err != nil {
-				errs = append(errs, validationError(fieldName, fmt.Sprint(fieldValue), tagValue))
+				errs = append(errs, ErrBadValidateTag)
 				continue
 			}
 			if fieldValue > int64(max) {
@@ -215,15 +215,15 @@ func validateSlice(field reflect.StructField, sliceValue reflect.Value, tags []s
 	for i := 0; i < sliceValue.Len(); i++ {
 		value := sliceValue.Index(i)
 		if value.Kind() == reflect.String {
-			err := validateString(field.Name, value.String(), tags)
-			for j := range err {
-				errs = append(errs, toValidationError(field.Name, err[j]))
+			err := validateString(value.String(), tags)
+			for _, e := range err {
+				errs = append(errs, toValidationError(field.Name, e))
 			}
 		}
 		if value.Kind() == reflect.Int {
-			err := validateInt64(field.Name, value.Int(), tags)
-			for j := range err {
-				errs = append(errs, toValidationError(field.Name, err[j]))
+			err := validateInt64(value.Int(), tags)
+			for _, e := range err {
+				errs = append(errs, toValidationError(field.Name, e))
 			}
 		}
 	}
@@ -292,10 +292,6 @@ func toInt64Slice(str, sep string) []int64 {
 		result = append(result, int64(v))
 	}
 	return result
-}
-
-func validationError(fieldName, fieldValue, tag string) error {
-	return fmt.Errorf("cannot validate field [%s] value [%s] using tag [%s]", fieldName, fieldValue, tag)
 }
 
 func toValidationError(fieldName string, errorMsg error) ValidationError {
