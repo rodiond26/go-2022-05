@@ -34,21 +34,19 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(r, domain)
 }
 
-type users [100_000]User
-
 func countDomains(r io.Reader, domain string) (DomainStat, error) {
 	result := make(DomainStat)
 	rr := bufio.NewReader(r)
 
 	for {
-		userJson, _, err := rr.ReadLine()
+		userJSON, _, err := rr.ReadLine()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
 			}
 			return nil, err
 		}
-		email := fastjson.GetString(userJson, emailFieldName)
+		email := fastjson.GetString(userJSON, emailFieldName)
 		if strings.Contains(email, domain) {
 			result[strings.ToLower(strings.SplitN(email, emailSepo, 2)[1])]++
 		}
