@@ -2,7 +2,7 @@ package hw10programoptimization
 
 import (
 	"bufio"
-	"fmt"
+	"errors"
 	"io"
 	"strings"
 
@@ -22,43 +22,34 @@ type User struct {
 type DomainStat map[string]int
 
 var (
+	ErrEmptyDomain = errors.New("domain is empty")
 	emailSepo      = "@"
 	emailFieldName = "Email"
 )
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	emails, err := getEmails(r)
-	if err != nil {
-		return nil, fmt.Errorf("getting email error: %w", err)
+	if domain == "" {
+		return nil, ErrEmptyDomain
 	}
-	return countDomains(emails, domain)
+	return countDomains(r, domain)
 }
 
-func getEmails(r io.Reader) ([]string, error) {
-	emails := make([]string, 0, 128000)
-	scanner := bufio.NewScanner(r)
+func countDomains(r io.Reader, domain string) (DomainStat, error) {
+	result := make(DomainStat)
+	rr := bufio.NewReader(r)
 
-	var parser fastjson.Parser
-
-	for scanner.Scan() {
-		userJSON, err := parser.Parse(scanner.Text())
+	for {
+		userJSON, _, err := rr.ReadLine()
 		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
 			return nil, err
 		}
-		emails = append(emails, string(userJSON.GetStringBytes(emailFieldName)))
-	}
-	return emails, nil
-}
-
-func countDomains(emails []string, domain string) (DomainStat, error) {
-	count := make(DomainStat)
-	domain = "." + domain
-	for _, email := range emails {
-		matched := strings.Contains(email, domain)
-
-		if matched {
-			count[strings.ToLower(strings.SplitN(email, emailSepo, 2)[1])]++
+		email := fastjson.GetString(userJSON, emailFieldName)
+		if strings.Contains(email, domain) {
+			result[strings.ToLower(strings.SplitN(email, emailSepo, 2)[1])]++
 		}
 	}
-	return count, nil
+	return result, nil
 }
