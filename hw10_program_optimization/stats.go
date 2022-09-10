@@ -2,7 +2,7 @@ package hw10programoptimization
 
 import (
 	"bufio"
-	"errors"
+	"fmt"
 	"io"
 	"strings"
 
@@ -22,34 +22,43 @@ type User struct {
 type DomainStat map[string]int
 
 var (
-	ErrEmptyDomain = errors.New("domain is empty")
 	emailSepo      = "@"
 	emailFieldName = "Email"
 )
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	if domain == "" {
-		return nil, ErrEmptyDomain
+	emails, err := getEmails(r)
+	if err != nil {
+		return nil, fmt.Errorf("getting email error: %w", err)
 	}
-	return countDomains(r, domain)
+	return countDomains(emails, domain)
 }
 
-func countDomains(r io.Reader, domain string) (DomainStat, error) {
-	result := make(DomainStat)
-	rr := bufio.NewReader(r)
+func getEmails(r io.Reader) ([]string, error) {
+	emails := make([]string, 0, 128000)
+	scanner := bufio.NewScanner(r)
 
-	for {
-		userJSON, _, err := rr.ReadLine()
+	var parser fastjson.Parser
+
+	for scanner.Scan() {
+		userJSON, err := parser.Parse(scanner.Text())
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
 			return nil, err
 		}
-		email := fastjson.GetString(userJSON, emailFieldName)
-		if strings.Contains(email, domain) {
-			result[strings.ToLower(strings.SplitN(email, emailSepo, 2)[1])]++
+		emails = append(emails, string(userJSON.GetStringBytes(emailFieldName)))
+	}
+	return emails, nil
+}
+
+func countDomains(emails []string, domain string) (DomainStat, error) {
+	count := make(DomainStat)
+	domain = "." + domain
+	for _, email := range emails {
+		matched := strings.Contains(email, domain)
+
+		if matched {
+			count[strings.ToLower(strings.SplitN(email, emailSepo, 2)[1])]++
 		}
 	}
-	return result, nil
+	return count, nil
 }

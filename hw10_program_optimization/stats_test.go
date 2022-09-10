@@ -50,11 +50,4 @@ func TestGetDomainStat(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, DomainStat{}, result)
 	})
-
-	t.Run("domain is empty", func(t *testing.T) {
-		result, err := GetDomainStat(bytes.NewBufferString(data), "")
-		require.Nil(t, result)
-		require.Error(t, err)
-		require.ErrorIs(t, err, ErrEmptyDomain)
-	})
 }
