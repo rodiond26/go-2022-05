@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -13,7 +14,12 @@ import (
 
 const defaultTimeout = 10
 
-var timeout time.Duration
+var (
+	timeout         time.Duration
+	invalidArgs     = "invalid number of args"
+	ErrConnection   = errors.New("connection error")
+	closeConnection = "close connection error"
+)
 
 func init() {
 	flag.DurationVar(&timeout, "timeout", time.Second*defaultTimeout, "connection timeout [default=10s]")
@@ -23,7 +29,8 @@ func main() {
 	flag.Parse()
 	flagArgs := flag.Args()
 	if len(flagArgs) != 2 {
-		fmt.Printf("script error \n") // TODO fix
+		fmt.Println(invalidArgs)
+		os.Exit(1)
 	}
 
 	host, port := flagArgs[0], flagArgs[1]
@@ -37,12 +44,12 @@ func main() {
 
 func run(client TelnetClient) error {
 	if err := client.Connect(); err != nil {
-		return fmt.Errorf("connection error %w", err)
+		return ErrConnection
 	}
 	defer func(client TelnetClient) {
 		err := client.Close()
 		if err != nil {
-			log.Fatalf("Error while close connection: %s", err)
+			fmt.Println(closeConnection)
 		}
 	}(client)
 
