@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
+	"os"
 
-	"github.com/BurntSushi/toml"
+	"github.com/spf13/viper"
 )
 
 // При желании конфигурацию можно вынести в internal/config.
@@ -20,14 +21,39 @@ type LoggerConf struct {
 }
 
 type DBConf struct {
-	DSN string
+	DSN      string
+	Password string
 }
 
 func NewConfig(configPath string) (config Config, err error) {
-	_, err = toml.DecodeFile(configPath, &config)
+	err = initConfig(configPath)
 	if err != nil {
-		err = fmt.Errorf("when decode config [%s] then error [%w]", configPath, err)
 		return Config{}, err
 	}
-	return config, nil
+	return readConfig(), err
+}
+
+func initConfig(file string) (err error) {
+	yaml, err := os.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	viper.SetConfigType("yaml")
+	err = viper.ReadConfig(bytes.NewBuffer(yaml))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func readConfig() (config Config) {
+	return Config{
+		Logger: LoggerConf{
+			Level: viper.GetString("level"),
+		},
+		DB: DBConf{
+			DSN:      "",
+			Password: os.Getenv("DB_PASSWORD"),
+		},
+	}
 }

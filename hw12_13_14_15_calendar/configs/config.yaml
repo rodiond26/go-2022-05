@@ -1,5 +1,16 @@
-[logger]
-level = "INFO"
+stand:
+  type: DEV
 
-# TODO
-# ...
+logger:
+  level: INFO
+
+server:
+  port: 8000
+
+db:
+  username: postgres
+  password: password
+  host: host
+  port: port
+  name: postgres
+  sslmode: disable
