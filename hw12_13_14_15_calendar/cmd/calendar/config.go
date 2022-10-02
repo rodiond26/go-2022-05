@@ -1,59 +1,36 @@
 package main
 
 import (
-	"bytes"
+	"log"
 	"os"
 
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
-// При желании конфигурацию можно вынести в internal/config.
-// Организация конфига в main принуждает нас сужать API компонентов, использовать
-// при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type Config struct {
-	Logger LoggerConf
-	DB     DBConf
+	Logger LoggerConfig `yaml:"logger"`
 }
 
-type LoggerConf struct {
-	Level string `yaml:"c"`
-	Path  string
+type LoggerConfig struct {
+	Level string `yaml:"level"`
 }
 
-type DBConf struct {
-	DSN      string
-	Password string
+func NewConfig() Config {
+	return Config{}
 }
 
-func NewConfig(configPath string) (config Config, err error) {
-	err = initConfig(configPath)
-	if err != nil {
-		return Config{}, err
-	}
-	return readConfig(), err
-}
-
-func initConfig(file string) (err error) {
-	yaml, err := os.ReadFile(file)
+func (config *Config) ReadConfig(configPath string) (err error) {
+	configFile, err := os.Open(configPath)
 	if err != nil {
 		return err
 	}
-	viper.SetConfigType("yaml")
-	err = viper.ReadConfig(bytes.NewBuffer(yaml))
+	defer configFile.Close()
+
+	yamlDecoder := yaml.NewDecoder(configFile)
+	err = yamlDecoder.Decode(&config)
 	if err != nil {
 		return err
 	}
+	log.Printf("config = [%+v]\n", config)
 	return nil
-}
-
-func readConfig() (config Config) {
-	return Config{
-		Logger: LoggerConf{
-			Level: viper.GetString("level"),
-		},
-		DB: DBConf{
-			DSN:      "",
-			Password: os.Getenv("DB_PASSWORD"),
-		},
-	}
 }

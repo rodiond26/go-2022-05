@@ -3,19 +3,17 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/app"
 	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage/memory"
-
-	"github.com/joho/godotenv"
 )
 
 var configFile string
@@ -25,23 +23,24 @@ func init() {
 }
 
 func main() {
-	flag.Parse()
+	log.Printf("start\n")
 
+	flag.Parse()
 	if flag.Arg(0) == "version" {
 		printVersion()
 		return
 	}
-	fmt.Println("config start >>>")
 
-	config, err := NewConfig(configFile)
-	if err != nil {
-		log.Fatal(err)
+	config := NewConfig()
+	if err := config.ReadConfig(configFile); err != nil {
+		log.Fatalf("Config error: %v", err)
 	}
 
-	err = godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
 	}
+	Password := os.Getenv("DB_PASSWORD")
+	log.Printf("Password = [%v]\n", Password)
 
 	logg := logger.New(config.Logger.Level)
 	storage := memorystorage.New()
