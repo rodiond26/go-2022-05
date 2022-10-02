@@ -1,8 +1,10 @@
-stand:
-  type: DEV
+environment:
+  # [dev | prod]
+  type: dev
 
 logger:
-  level: INFO
+  # [info | debug | warn | error]
+  level: info
 
 server:
   port: 8000

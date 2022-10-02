@@ -11,7 +11,8 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/app"
-	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/logger"
+	appConfig "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/config"
+	appLogger "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage/memory"
 )
@@ -31,8 +32,8 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	if err := config.ReadConfig(configFile); err != nil {
+	mainConfig := appConfig.NewConfig()
+	if err := mainConfig.ReadConfig(configFile); err != nil {
 		log.Fatalf("Config error: %v", err)
 	}
 
@@ -42,10 +43,18 @@ func main() {
 	Password := os.Getenv("DB_PASSWORD")
 	log.Printf("Password = [%v]\n", Password)
 
-	logg := logger.New(config.Logger.Level)
+	logz, err := appLogger.NewLogger(&mainConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logz.Info("logz is Info")
+	logz.Debug("logz is Debug")
+	logz.Warn("logz is Warn")
+	logz.Error("logz is Error")
+
 	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
-	server := internalhttp.NewServer(logg, calendar)
+	calendar := app.New(logz, storage)
+	server := internalhttp.NewServer(logz, calendar)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
@@ -57,14 +66,14 @@ func main() {
 		defer cancel()
 
 		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+			logz.Error("failed to stop http server: " + err.Error())
 		}
 	}()
 
-	logg.Info("calendar is running...")
+	logz.Info("calendar is running...")
 
 	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
+		logz.Error("failed to start http server: " + err.Error())
 		cancel()
 		os.Exit(1) //nolint:gocritic
 	}
