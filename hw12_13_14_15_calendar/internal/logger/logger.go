@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -21,8 +20,8 @@ var (
 	}
 )
 
-func NewLogger(mainConfig *config.Config) (logger *zap.Logger, err error) {
-	switch mainConfig.Environment.Type {
+func NewLogger(env, level string) (logger *zap.Logger, err error) {
+	switch env {
 	case "prod":
 		logConfig = zap.NewProductionConfig()
 	case "dev":
@@ -30,7 +29,7 @@ func NewLogger(mainConfig *config.Config) (logger *zap.Logger, err error) {
 		logConfig = zap.NewDevelopmentConfig()
 	}
 
-	logLevel := level(mainConfig.Logger.Level)
+	logLevel := zlevel(level)
 	logConfig.Level.SetLevel(logLevel)
 	logger, err = logConfig.Build()
 	if err != nil {
@@ -41,8 +40,8 @@ func NewLogger(mainConfig *config.Config) (logger *zap.Logger, err error) {
 	return logger, nil
 }
 
-func level(lvl string) zapcore.Level {
-	switch lvl {
+func zlevel(level string) zapcore.Level {
+	switch level {
 	case "info":
 		return zapcore.InfoLevel
 	case "debug":

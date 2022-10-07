@@ -6,6 +6,10 @@ logger:
   # [info | debug | warn | error]
   level: info
 
+storage:
+  # [sql | memory]
+  type: memory
+
 server:
   port: 8000
 

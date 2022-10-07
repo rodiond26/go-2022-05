@@ -22,7 +22,7 @@ type User struct {
 }
 
 type Storage interface {
-	CreateEvent(ctx context.Context, event *Event) (id int64, err error)
+	CreateEvent(ctx context.Context, newEvent *Event) (id int64, err error)
 	FindEventByID(ctx context.Context, id int64) (event Event, err error)
 	UpdateEvent(ctx context.Context, event *Event) (err error)
 	DeleteEventByID(ctx context.Context, id int64) (err error)

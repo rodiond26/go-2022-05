@@ -43,7 +43,7 @@ func main() {
 	Password := os.Getenv("DB_PASSWORD")
 	log.Printf("Password = [%v]\n", Password)
 
-	logz, err := appLogger.NewLogger(&mainConfig)
+	logz, err := appLogger.NewLogger(mainConfig.Environment.Type, mainConfig.Logger.Level)
 	if err != nil {
 		log.Fatal(err)
 	}
