@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,11 +11,12 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+
 	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/app"
 	appConfig "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/config"
 	appLogger "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage/memory"
+	storage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage/init_storage"
 )
 
 var configFile string
@@ -52,9 +54,13 @@ func main() {
 	logz.Warn("logz is Warn")
 	logz.Error("logz is Error")
 
-	storage := memorystorage.New()
+	storage, err := storage.NewStorage( /*ctx, */ "", "dsn string")
+	fmt.Printf("storage = %+v]\n", storage)
 	calendar := app.New(logz, storage)
+	fmt.Printf("calendar = %+v]\n", calendar)
+
 	server := internalhttp.NewServer(logz, calendar)
+	fmt.Printf("server = %+v]\n", server)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()

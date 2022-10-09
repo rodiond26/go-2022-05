@@ -22,6 +22,8 @@ type User struct {
 }
 
 type Storage interface {
+	// Connect(ctx context.Context, dsn string) (pool *pgxpool.Pool, err error)
+
 	CreateEvent(ctx context.Context, newEvent *Event) (id int64, err error)
 	FindEventByID(ctx context.Context, id int64) (event Event, err error)
 	UpdateEvent(ctx context.Context, event *Event) (err error)
