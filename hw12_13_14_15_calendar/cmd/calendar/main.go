@@ -59,7 +59,7 @@ func main() {
 	calendar := app.New(logz, storage)
 	fmt.Printf("calendar = %+v]\n", calendar)
 
-	server := internalhttp.NewServer(logz, calendar)
+	server := internalhttp.NewServer(logz)
 	fmt.Printf("server = %+v]\n", server)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
@@ -78,7 +78,7 @@ func main() {
 
 	logz.Info("calendar is running...")
 
-	if err := server.Start(ctx); err != nil {
+	if err := server.Start(ctx, "localhost:8080"); err != nil {
 		logz.Error("failed to start http server: " + err.Error())
 		cancel()
 		os.Exit(1) //nolint:gocritic

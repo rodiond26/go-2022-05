@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"go.uber.org/zap"
+	appLogger "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/logger"
 )
 
 func loggingMiddleware(h http.Handler) http.Handler {
@@ -14,7 +14,8 @@ func loggingMiddleware(h http.Handler) http.Handler {
 		h.ServeHTTP(w, r)
 		latency := time.Since(startTime)
 
-		zap.Logger.Info(fmt.Sprintf("%s [%s] %s %s %s %d %s \"%s\"",
+		l, _ := appLogger.NewLogger("dev", "info")
+		l.Info(fmt.Sprintf("%s [%s] %s %s %s %d %s \"%s\"",
 			r.RemoteAddr,
 			time.Now().Format("2006-01-02 15:04:05 -0700"),
 			r.Method,

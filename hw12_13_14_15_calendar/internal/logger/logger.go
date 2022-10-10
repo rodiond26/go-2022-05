@@ -5,8 +5,28 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var (
-	logConfig = zap.Config{
+type Logger struct {
+	logz zap.Logger
+}
+
+func (l Logger) Info(msg string) {
+	l.logz.Info(msg)
+}
+
+func (l Logger) Debug(msg string) {
+	l.logz.Debug(msg)
+}
+
+func (l Logger) Warn(msg string) {
+	l.logz.Warn(msg)
+}
+
+func (l Logger) Error(msg string) {
+	l.logz.Error(msg)
+}
+
+func NewLogger(env, level string) (logger *Logger, err error) {
+	logConfig := zap.Config{
 		Level:       zap.NewAtomicLevelAt(zapcore.InfoLevel),
 		Development: false,
 		Sampling: &zap.SamplingConfig{
@@ -18,9 +38,6 @@ var (
 		OutputPaths:      []string{"stderr"},
 		ErrorOutputPaths: []string{"stderr"},
 	}
-)
-
-func NewLogger(env, level string) (logger *zap.Logger, err error) {
 	switch env {
 	case "prod":
 		logConfig = zap.NewProductionConfig()
@@ -31,13 +48,15 @@ func NewLogger(env, level string) (logger *zap.Logger, err error) {
 
 	logLevel := zlevel(level)
 	logConfig.Level.SetLevel(logLevel)
-	logger, err = logConfig.Build()
+	zlogger, err := logConfig.Build()
 	if err != nil {
 		return nil, err
 	}
-	defer logger.Sync()
+	defer zlogger.Sync()
 
-	return logger, nil
+	return &Logger{
+		logz: *zlogger,
+	}, nil
 }
 
 func zlevel(level string) zapcore.Level {
