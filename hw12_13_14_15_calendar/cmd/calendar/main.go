@@ -43,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 	Password := os.Getenv("DB_PASSWORD")
-	log.Printf("Password = [%v]\n", Password)
+	log.Printf("Password = [%v]\n", Password) // TODO delete
 
 	logz, err := appLogger.NewLogger(mainConfig.Environment.Type, mainConfig.Logger.Level)
 	if err != nil {
@@ -54,7 +54,9 @@ func main() {
 	logz.Warn("logz is Warn")
 	logz.Error("logz is Error")
 
-	storage, err := storage.NewStorage( /*ctx, */ "", "dsn string")
+	ctx := context.Background()
+
+	storage, err := storage.NewStorage(ctx, "", "dsn string")
 	fmt.Printf("storage = %+v]\n", storage)
 	calendar := app.New(logz, storage)
 	fmt.Printf("calendar = %+v]\n", calendar)

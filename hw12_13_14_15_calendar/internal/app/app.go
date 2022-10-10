@@ -24,10 +24,10 @@ type Event struct {
 }
 
 type Logger interface {
-	// Info(msg string)
-	// Warn(msg string)
-	// Error(msg string)
-	// Debug(msg string)
+	Info(msg string)
+	Warn(msg string)
+	Error(msg string)
+	Debug(msg string)
 }
 
 type Storage interface { // TODO
@@ -41,7 +41,7 @@ func New(logger Logger, storage storage.Storage) *App {
 }
 
 func (a *App) Connect(ctx context.Context, storageType string, dsn string) error {
-	storage, err := init_storage.NewStorage( /*ctx,*/ storageType, dsn)
+	storage, err := init_storage.NewStorage(ctx, storageType, dsn)
 	if err != nil {
 		return err
 	}

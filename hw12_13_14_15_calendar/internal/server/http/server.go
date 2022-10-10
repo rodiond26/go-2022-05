@@ -25,29 +25,19 @@ type Logger interface {
 type Application interface { // TODO
 }
 
-// func NewServer(logger Logger, app Application) *Server {
-// 	port := "8080"
-// 	return &Server{
-// 		httpServer: &http.Server{
-// 			Addr: ":" + port,
-// 			// Handler:        handler,
-// 			MaxHeaderBytes: 1 << 20, // 1 MB
-// 			ReadTimeout:    10 * time.Second,
-// 			WriteTimeout:   10 * time.Second,
-// 		},
-// 	}
-// }
+func NewServer(logger Logger) *Server {
+	server := &Server{
+		logger: logger,
+		router: httprouter.New(),
+	}
 
-func NewServer(logger Logger) *Server { // app Application
-	serv := &Server{logger: logger}
-	serv.router = httprouter.New()
-
-	serv.router.GET("/", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	server.router.GET("/", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		logger.Info("/")
 		text := "Hello world!"
 		fmt.Fprint(writer, text)
 	})
 
-	return serv
+	return server
 }
 
 func (s *Server) Start(ctx context.Context, addr string) error {
