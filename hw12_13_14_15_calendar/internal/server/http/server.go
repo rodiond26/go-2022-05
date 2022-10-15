@@ -35,7 +35,15 @@ func NewServer(logger Logger, app app.App) *Server {
 	}
 
 	server.router.GET("/", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		logger.Info("/")
+		logger.Info(fmt.Sprintf("%s [%s] %s %s %s %d \"%s\"",
+			request.RemoteAddr,
+			time.Now().Format("2006-01-02 15:04:05 -0700"),
+			request.Method,
+			request.URL.Path,
+			request.Proto,
+			http.StatusOK,
+			request.UserAgent(),
+		))
 		text := "Calendar application is running ..."
 		fmt.Fprint(writer, text)
 	})
