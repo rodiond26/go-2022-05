@@ -5,7 +5,6 @@ go 1.16
 require (
 	github.com/georgysavva/scany v1.2.1
 	github.com/jackc/pgx/v4 v4.17.2
-	github.com/joho/godotenv v1.4.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kr/pretty v0.3.0 // indirect
 	go.uber.org/zap v1.13.0

@@ -7,12 +7,14 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/app"
 )
 
 type Server struct {
 	httpServer *http.Server
 	logger     Logger
 	router     *httprouter.Router
+	app        app.App
 }
 
 type Logger interface {
@@ -25,15 +27,16 @@ type Logger interface {
 type Application interface { // TODO
 }
 
-func NewServer(logger Logger) *Server {
+func NewServer(logger Logger, app app.App) *Server {
 	server := &Server{
 		logger: logger,
 		router: httprouter.New(),
+		app:    app,
 	}
 
 	server.router.GET("/", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		logger.Info("/")
-		text := "Hello world!"
+		text := "Calendar application is running ..."
 		fmt.Fprint(writer, text)
 	})
 
@@ -41,7 +44,7 @@ func NewServer(logger Logger) *Server {
 }
 
 func (s *Server) Start(ctx context.Context, addr string) error {
-	s.logger.Info("HTTP server [" + addr + "] starting...")
+	s.logger.Info("HTTP server [" + addr + "] starting ...")
 	s.httpServer = &http.Server{
 		Addr:         addr,
 		Handler:      s.router,
@@ -66,7 +69,7 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	s.logger.Info("HTTP server was stopped...")
+	s.logger.Info("HTTP server is stopped ...")
 	if err := s.httpServer.Shutdown(ctx); err != nil {
 		return err
 	}

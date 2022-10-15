@@ -39,7 +39,12 @@ func (s *Storage) Connect(ctx context.Context, dsn string) (pool *pgxpool.Pool, 
 		return
 	}
 
-	// TODO add config parameters
+	config.MaxConns = int32(10)
+	config.MinConns = int32(1)
+	config.HealthCheckPeriod = 1 * time.Minute
+	config.MaxConnLifetime = 1 * time.Hour
+	config.MaxConnIdleTime = 30 * time.Minute
+	config.ConnConfig.ConnectTimeout = 1 * time.Second
 	pool, err = pgxpool.ConnectConfig(ctx, config)
 	if err != nil {
 		err = fmt.Errorf("when connecting using config [%+v] then error: [%w]", config, err)
