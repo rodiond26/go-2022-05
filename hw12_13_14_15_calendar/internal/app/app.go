@@ -16,11 +16,11 @@ type App struct {
 type Event struct {
 	ID               int64     `json:"id"`
 	Title            string    `json:"title"`
-	StartDate        time.Time `json:"start_date"`
-	EndDate          time.Time `json:"end_date"`
+	StartDate        time.Time `json:"startDate"`
+	EndDate          time.Time `json:"endDate"`
 	Description      string    `json:"description"`
-	UserID           int64     `json:"user_id"`
-	NotificationDate time.Time `json:"notification_date"`
+	UserID           int64     `json:"userId"`
+	NotificationDate time.Time `json:"notificationDate"`
 }
 
 type Logger interface {

@@ -53,6 +53,9 @@ func main() {
 
 	log.Printf("[5] initializing storage ...\n")
 	storage, err := storage.NewStorage(ctx, "", "dsn string")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Printf("[6] initializing calendar ...\n")
 	calendar := app.New(logz, storage)

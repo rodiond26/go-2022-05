@@ -54,11 +54,11 @@ func NewServer(logger Logger, app app.App) *Server {
 func (s *Server) Start(ctx context.Context, addr string) error {
 	s.logger.Info("HTTP server [" + addr + "] starting ...")
 	s.httpServer = &http.Server{
-		Addr:         addr,
-		Handler:      s.router,
-		WriteTimeout: 5 * time.Second,
-		ReadTimeout:  5 * time.Second,
+		Addr:              addr,
+		Handler:           s.router,
+		WriteTimeout:      5 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       5 * time.Second,
 	}
 
 	errChan := make(chan error)

@@ -8,7 +8,6 @@ import (
 
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgx/v4/pgxpool"
-
 	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage"
 )
 
@@ -19,7 +18,7 @@ var (
 )
 
 const (
-	invalidId = -1
+	invalidID = -1
 )
 
 type Storage struct {
@@ -55,21 +54,25 @@ func (s *Storage) Connect(ctx context.Context, dsn string) (pool *pgxpool.Pool, 
 
 func (s *Storage) CreateEvent(ctx context.Context, newEvent *storage.Event) (id int64, err error) {
 	events, err := s.FindEventsByPeriod(ctx, newEvent.StartDate, newEvent.EndDate)
+	if err != nil {
+		return invalidID, err
+	}
 	for _, event := range events {
 		if newEvent.StartDate.After(event.StartDate) && newEvent.StartDate.Before(event.EndDate) {
-			return invalidId, ErrIsBusy
+			return invalidID, ErrIsBusy
 		}
 		if newEvent.EndDate.After(event.StartDate) && newEvent.EndDate.Before(event.EndDate) {
-			return invalidId, ErrIsBusy
+			return invalidID, ErrIsBusy
 		}
 	}
 
 	query := `INSERT INTO events(event_id, title, start_date, end_date, description, user_id, remind_date)
 	          VALUES ($1, $2, $3, $4, $5, $6, $7)
 			  RETURNING event_id;`
-	_, err = s.PgxPool.Exec(ctx, query, newEvent.ID, newEvent.Title, newEvent.StartDate, newEvent.EndDate, newEvent.Description, newEvent.UserID, newEvent.NotificationDate)
+	_, err = s.PgxPool.Exec(ctx, query, newEvent.ID, newEvent.Title, newEvent.StartDate,
+		newEvent.EndDate, newEvent.Description, newEvent.UserID, newEvent.NotificationDate)
 	if err != nil {
-		return invalidId, err
+		return invalidID, err
 	}
 	return newEvent.ID, nil
 }
@@ -91,7 +94,8 @@ func (s *Storage) UpdateEvent(ctx context.Context, event *storage.Event) (err er
 	query := `UPDATE events
 	             SET title=$1, start_date=$2, end_date=$3, description=$4, user_id=$5, remind_date=$6
 	           WHERE id=$7;`
-	_, err = s.PgxPool.Exec(ctx, query, event.ID, event.Title, event.StartDate, event.EndDate, event.Description, event.UserID, event.NotificationDate, event.ID)
+	_, err = s.PgxPool.Exec(ctx, query, event.ID, event.Title, event.StartDate,
+		event.EndDate, event.Description, event.UserID, event.NotificationDate, event.ID)
 	if err != nil {
 		return err
 	}
@@ -108,16 +112,16 @@ func (s *Storage) DeleteEventByID(ctx context.Context, id int64) (err error) {
 	return nil
 }
 
-func (s *Storage) FindEventsByPeriod(ctx context.Context, startDate, endDate time.Time) (events []storage.Event, err error) {
+func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) (events []storage.Event, err error) {
 	query := `SELECT event_id, title, start_date, end_date, description, user_id, remind_date
 		        FROM events
 		       WHERE start_date BETWEEN $1 AND $2;`
-	rows, err := s.PgxPool.Query(ctx, query, startDate, endDate)
-	defer rows.Close()
+	rows, err := s.PgxPool.Query(ctx, query, start, end)
 	if err != nil {
 		err = fmt.Errorf("when executing query [%s] then error: [%w]", query, err)
 		return events, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		values, rowErr := rows.Values()
