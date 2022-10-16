@@ -16,7 +16,7 @@ var (
 )
 
 const (
-	invalidId = -1
+	invalidID = -1
 )
 
 type Storage struct {
@@ -34,17 +34,17 @@ func New() *Storage {
 func (s *Storage) CreateEvent(ctx context.Context, newEvent *storage.Event) (id int64, err error) {
 	select {
 	case <-ctx.Done():
-		return invalidId, ErrIsCanceled
+		return invalidID, ErrIsCanceled
 	default:
 		s.mu.Lock()
 		defer s.mu.Unlock()
 
 		for _, event := range s.events {
 			if newEvent.StartDate.After(event.StartDate) && newEvent.StartDate.Before(event.EndDate) {
-				return invalidId, ErrIsBusy
+				return invalidID, ErrIsBusy
 			}
 			if newEvent.EndDate.After(event.StartDate) && newEvent.EndDate.Before(event.EndDate) {
-				return invalidId, ErrIsBusy
+				return invalidID, ErrIsBusy
 			}
 		}
 		id = newEvent.ID
@@ -99,7 +99,7 @@ func (s *Storage) DeleteEventByID(ctx context.Context, id int64) (err error) {
 	return nil
 }
 
-func (s *Storage) FindEventsByPeriod(ctx context.Context, startDate, endDate time.Time) (events []storage.Event, err error) {
+func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) (events []storage.Event, err error) {
 	events = make([]storage.Event, 0)
 	select {
 	case <-ctx.Done():
@@ -109,7 +109,7 @@ func (s *Storage) FindEventsByPeriod(ctx context.Context, startDate, endDate tim
 		defer s.mu.Unlock()
 
 		for _, event := range s.events {
-			if startDate.Before(event.StartDate) && endDate.After(event.StartDate) {
+			if start.Before(event.StartDate) && end.After(event.StartDate) {
 				events = append(events, event)
 			}
 		}

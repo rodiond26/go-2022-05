@@ -58,6 +58,7 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 		Handler:      s.router,
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	errChan := make(chan error)

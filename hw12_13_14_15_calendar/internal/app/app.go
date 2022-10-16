@@ -5,7 +5,7 @@ import (
 	"time"
 
 	storage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage"
-	init_storage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage/init_storage"
+	init_storage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage/initializing"
 )
 
 type App struct {

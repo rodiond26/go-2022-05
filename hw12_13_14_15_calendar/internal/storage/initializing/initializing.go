@@ -1,4 +1,4 @@
-package init_storage
+package initializng
 
 import (
 	"context"

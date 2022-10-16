@@ -13,7 +13,7 @@ import (
 	appConfig "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/config"
 	appLogger "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/server/http"
-	storage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage/init_storage"
+	storage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage/initializing"
 )
 
 var configFile string
