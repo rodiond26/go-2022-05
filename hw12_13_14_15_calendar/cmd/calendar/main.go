@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -79,8 +80,9 @@ func main() {
 	}()
 
 	logz.Info("calendar is running...")
+	addrServer := net.JoinHostPort(mainConfig.Server.Host, mainConfig.Server.Port)
 
-	if err := server.Start(ctx, "localhost:8080"); err != nil {
+	if err := server.Start(ctx, addrServer); err != nil {
 		logz.Error("failed to start http server: " + err.Error())
 		cancel()
 		os.Exit(1) //nolint:gocritic

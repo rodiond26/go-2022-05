@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Environment EnvironmentConfig `yaml:"environment"`
 	Logger      LoggerConfig      `yaml:"logger"`
+	Server      ServerConfig      `yaml:"server"`
 }
 
 type EnvironmentConfig struct {
@@ -18,6 +19,11 @@ type EnvironmentConfig struct {
 
 type LoggerConfig struct {
 	Level string `yaml:"level"`
+}
+
+type ServerConfig struct {
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
 }
 
 func NewConfig() Config {
