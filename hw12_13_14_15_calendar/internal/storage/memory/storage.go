@@ -31,7 +31,7 @@ func New() *Storage {
 	}
 }
 
-func (s *Storage) CreateEvent(ctx context.Context, newEvent *storage.Event) (id int64, err error) {
+func (s *Storage) AddEvent(ctx context.Context, newEvent *storage.Event) (id int64, err error) {
 	select {
 	case <-ctx.Done():
 		return invalidID, ErrIsCanceled
@@ -48,6 +48,7 @@ func (s *Storage) CreateEvent(ctx context.Context, newEvent *storage.Event) (id 
 			}
 		}
 		id = newEvent.ID
+		s.events[id] = *newEvent
 	}
 	return id, nil
 }
@@ -60,8 +61,8 @@ func (s *Storage) FindEventByID(ctx context.Context, id int64) (event storage.Ev
 		s.mu.Lock()
 		defer s.mu.Unlock()
 
-		if _, ok := s.events[event.ID]; ok {
-			return s.events[event.ID], nil
+		if _, ok := s.events[id]; ok {
+			return s.events[id], nil
 		}
 	}
 	return event, ErrEventIsNotFound

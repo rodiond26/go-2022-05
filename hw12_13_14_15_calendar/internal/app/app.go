@@ -53,8 +53,8 @@ func (a *App) Close(ctx context.Context) error {
 	return a.storage.Close(ctx)
 }
 
-func (a *App) CreateEvent(ctx context.Context, event *Event) (id int64, err error) {
-	return a.storage.CreateEvent(ctx, &storage.Event{
+func (a *App) AddEvent(ctx context.Context, event *Event) (id int64, err error) {
+	return a.storage.AddEvent(ctx, &storage.Event{
 		ID:               event.ID,
 		Title:            event.Title,
 		StartDate:        event.StartDate,

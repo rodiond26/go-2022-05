@@ -52,7 +52,7 @@ func (s *Storage) Connect(ctx context.Context, dsn string) (pool *pgxpool.Pool, 
 	return
 }
 
-func (s *Storage) CreateEvent(ctx context.Context, newEvent *storage.Event) (id int64, err error) {
+func (s *Storage) AddEvent(ctx context.Context, newEvent *storage.Event) (id int64, err error) {
 	events, err := s.FindEventsByPeriod(ctx, newEvent.StartDate, newEvent.EndDate)
 	if err != nil {
 		return invalidID, err
