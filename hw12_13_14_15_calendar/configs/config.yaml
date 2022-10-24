@@ -1,0 +1,23 @@
+environment:
+  # [dev | prod]
+  type: dev
+
+logger:
+  # [info | debug | warn | error]
+  level: info
+
+storage:
+  # [sql | memory]
+  type: memory
+
+server:
+  host: 127.0.0.1
+  port: 8000
+
+db:
+  username: postgres
+  password: password
+  host: host
+  port: port
+  name: postgres
+  sslmode: disable
