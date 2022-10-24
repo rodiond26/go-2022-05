@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  calendar:
+    build:
+      context: .
+      dockerfile: build/calendar/Dockerfile
+    ports:
+      - "8000:8000"
+  #    - "8090:8090"
+    depends_on:
+      - database
+   # volumes:
+   #   - "./configs/calendar/config.yml:/app/config.yml"
+   #   - "./logs/calendar/:/app/logs/"
+   #   - "./migrations/:/app/migrations"
+  database:
+    image: postgres:13.8-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: calendar
+    volumes:
+      - /tmp/database-data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
