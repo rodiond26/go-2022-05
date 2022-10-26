@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage"
+	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/model"
 )
 
 var (
@@ -21,17 +21,17 @@ const (
 
 type Storage struct {
 	mu     sync.RWMutex
-	events map[int64]storage.Event
+	events map[int64]model.Event
 }
 
 func New() *Storage {
 	return &Storage{
 		mu:     sync.RWMutex{},
-		events: make(map[int64]storage.Event),
+		events: make(map[int64]model.Event),
 	}
 }
 
-func (s *Storage) AddEvent(ctx context.Context, newEvent *storage.Event) (id int64, err error) {
+func (s *Storage) AddEvent(ctx context.Context, newEvent *model.Event) (id int64, err error) {
 	select {
 	case <-ctx.Done():
 		return invalidID, ErrIsCanceled
@@ -53,7 +53,7 @@ func (s *Storage) AddEvent(ctx context.Context, newEvent *storage.Event) (id int
 	return id, nil
 }
 
-func (s *Storage) FindEventByID(ctx context.Context, id int64) (event storage.Event, err error) {
+func (s *Storage) FindEventByID(ctx context.Context, id int64) (event model.Event, err error) {
 	select {
 	case <-ctx.Done():
 		return event, ErrIsCanceled
@@ -68,7 +68,7 @@ func (s *Storage) FindEventByID(ctx context.Context, id int64) (event storage.Ev
 	return event, ErrEventIsNotFound
 }
 
-func (s *Storage) UpdateEvent(ctx context.Context, updatedEvent *storage.Event) (err error) {
+func (s *Storage) UpdateEvent(ctx context.Context, updatedEvent *model.Event) (err error) {
 	select {
 	case <-ctx.Done():
 		return ErrIsCanceled
@@ -100,8 +100,8 @@ func (s *Storage) DeleteEventByID(ctx context.Context, id int64) (err error) {
 	return nil
 }
 
-func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) (events []storage.Event, err error) {
-	events = make([]storage.Event, 0)
+func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) (events []model.Event, err error) {
+	events = make([]model.Event, 0)
 	select {
 	case <-ctx.Done():
 		return nil, ErrIsCanceled

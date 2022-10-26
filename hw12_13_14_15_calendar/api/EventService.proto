@@ -2,6 +2,80 @@ syntax = "proto3";
 
 package event;
 
+import "google/protobuf/empty.proto";
+
+option go_package = "../grpc";
+
 message Event {
-    // TODO
+    int64 id = 1;
+    string title = 2;
+    string start_date = 3;
+    string end_date = 4;
+    string description = 5;
+    int64 user_id = 6;
+    string notify_date = 7;
+}
+
+service Calendar {
+    rpc CreateEvent(AddEventRequest) returns (AddEventResponse);
+    rpc UpdateEvent(EventUpdateRequest) returns (google.protobuf.Empty);
+    rpc DeleteEvent(DeleteEventRequest) returns (google.protobuf.Empty);
+    rpc GetAllEvents(google.protobuf.Empty) returns (GetAllEventsResponse);
+    rpc GetEventByID(GetEventByIDRequest) returns (GetEventByIDResponse);
+    rpc FindDayEvents(FindDayEventsRequest) returns (FindDayEventsResponse);
+    rpc FindWeekEvents(FindWeekEventsRequest) returns (FindWeekEventsResponse);
+    rpc FindMonthEvents(FindMonthEventsRequest) returns (FindMonthEventsResponse);
+  }
+
+message AddEventRequest {
+    Event event = 1;
+}
+
+message AddEventResponse {
+    int64 id = 1;
+}
+
+message EventUpdateRequest {
+    int64 id = 1;
+    Event event = 2;
+}
+
+message DeleteEventRequest {
+    int64 id = 1;
+}
+
+message GetEventByIDRequest {
+    int64 id = 1;
+}
+
+message GetEventByIDResponse {
+    Event event = 1;
+}
+  
+message GetAllEventsResponse {
+    repeated Event events = 1;
+}
+  
+message FindDayEventsRequest {
+    int64 id = 1;
+}
+  
+message FindDayEventsResponse {
+    int64 id = 1;
+}
+  
+message FindWeekEventsRequest {
+    int64 id = 1;
+}
+  
+message FindWeekEventsResponse {
+    repeated Event events = 1;
+}
+  
+message FindMonthEventsRequest {
+    int64 id = 1;
+}
+  
+message FindMonthEventsResponse {
+    repeated Event events = 1;
 }

@@ -37,4 +37,7 @@ up:
 down:
 	docker-compose down
 
-.PHONY: build run build-img run-img version test lint
+generate:
+	go generate ./...
+
+.PHONY: build run build-img run-img version test lint up down generate

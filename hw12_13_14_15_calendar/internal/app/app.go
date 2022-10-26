@@ -2,25 +2,17 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	storage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage"
+	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/model"
+	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage"
 	init_storage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage/initializing"
 )
 
 type App struct {
 	logger  Logger
 	storage storage.Storage
-}
-
-type Event struct {
-	ID               int64     `json:"id"`
-	Title            string    `json:"title"`
-	StartDate        time.Time `json:"startDate"`
-	EndDate          time.Time `json:"endDate"`
-	Description      string    `json:"description"`
-	UserID           int64     `json:"userId"`
-	NotificationDate time.Time `json:"notificationDate"`
 }
 
 type Logger interface {
@@ -30,7 +22,13 @@ type Logger interface {
 	Debug(msg string)
 }
 
-type Storage interface { // TODO
+type Application interface {
+	Close(ctx context.Context) error
+	AddEvent(ctx context.Context, newEvent *model.Event) (id int64, err error)
+	FindEventByID(ctx context.Context, id int64) (event model.Event, err error)
+	UpdateEvent(ctx context.Context, event *model.Event) (err error)
+	DeleteEventByID(ctx context.Context, id int64) (err error)
+	FindEventsByPeriod(ctx context.Context, startDate, endDate time.Time) (events []model.Event, err error)
 }
 
 func New(logger Logger, storage storage.Storage) *App {
@@ -53,14 +51,32 @@ func (a *App) Close(ctx context.Context) error {
 	return a.storage.Close(ctx)
 }
 
-func (a *App) AddEvent(ctx context.Context, event *Event) (id int64, err error) {
-	return a.storage.AddEvent(ctx, &storage.Event{
-		ID:               event.ID,
-		Title:            event.Title,
-		StartDate:        event.StartDate,
-		EndDate:          event.EndDate,
-		Description:      event.Description,
-		UserID:           event.UserID,
-		NotificationDate: event.NotificationDate,
-	})
+func (a *App) AddEvent(ctx context.Context, newEvent *model.Event) (id int64, err error) {
+	return a.storage.AddEvent(ctx, newEvent)
+}
+
+func (a *App) UpdateEvent(ctx context.Context, event *model.Event) (err error) {
+	if event.Title == "" {
+		return fmt.Errorf("empty title of event")
+	}
+	if event.EndDate.Before(event.StartDate) {
+		return fmt.Errorf("wrong dates")
+	}
+	return a.storage.UpdateEvent(ctx, event)
+}
+
+func (a *App) FindEventByID(ctx context.Context, id int64) (event model.Event, err error) {
+	event, err = a.storage.FindEventByID(ctx, id)
+	if err != nil {
+		return event, err
+	}
+	return event, nil
+}
+
+func (a *App) DeleteEventByID(ctx context.Context, id int64) (err error) {
+	return a.storage.DeleteEventByID(ctx, id)
+}
+
+func (a *App) FindEventsByPeriod(ctx context.Context, startDate time.Time) ([]model.Event, error) {
+	return a.storage.FindEventsByPeriod(ctx, startDate, startDate)
 }

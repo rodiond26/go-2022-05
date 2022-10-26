@@ -8,7 +8,7 @@ import (
 
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage"
+	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/model"
 )
 
 var (
@@ -52,7 +52,7 @@ func (s *Storage) Connect(ctx context.Context, dsn string) (pool *pgxpool.Pool, 
 	return
 }
 
-func (s *Storage) AddEvent(ctx context.Context, newEvent *storage.Event) (id int64, err error) {
+func (s *Storage) AddEvent(ctx context.Context, newEvent *model.Event) (id int64, err error) {
 	events, err := s.FindEventsByPeriod(ctx, newEvent.StartDate, newEvent.EndDate)
 	if err != nil {
 		return invalidID, err
@@ -77,12 +77,12 @@ func (s *Storage) AddEvent(ctx context.Context, newEvent *storage.Event) (id int
 	return newEvent.ID, nil
 }
 
-func (s *Storage) FindEventByID(ctx context.Context, id int64) (event storage.Event, err error) {
+func (s *Storage) FindEventByID(ctx context.Context, id int64) (event model.Event, err error) {
 	query := `SELECT event_id, title, start_date, end_date, description, user_id, remind_date
 	            FROM events
                WHERE event_id = $1;`
 
-	var events []*storage.Event
+	var events []*model.Event
 	err = pgxscan.Select(ctx, s.PgxPool, &events, query, id)
 	if err != nil {
 		return event, err
@@ -90,7 +90,7 @@ func (s *Storage) FindEventByID(ctx context.Context, id int64) (event storage.Ev
 	return *events[0], nil
 }
 
-func (s *Storage) UpdateEvent(ctx context.Context, event *storage.Event) (err error) {
+func (s *Storage) UpdateEvent(ctx context.Context, event *model.Event) (err error) {
 	query := `UPDATE events
 	             SET title=$1, start_date=$2, end_date=$3, description=$4, user_id=$5, remind_date=$6
 	           WHERE id=$7;`
@@ -112,7 +112,7 @@ func (s *Storage) DeleteEventByID(ctx context.Context, id int64) (err error) {
 	return nil
 }
 
-func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) (events []storage.Event, err error) {
+func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) (events []model.Event, err error) {
 	query := `SELECT event_id, title, start_date, end_date, description, user_id, remind_date
 		        FROM events
 		       WHERE start_date BETWEEN $1 AND $2;`
@@ -129,7 +129,7 @@ func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) 
 			err = fmt.Errorf("when iterating dataset then error: [%w]", rowErr)
 			return events, err
 		}
-		event := storage.Event{
+		event := model.Event{
 			ID:               values[0].(int64),
 			Title:            values[1].(string),
 			StartDate:        values[2].(time.Time),

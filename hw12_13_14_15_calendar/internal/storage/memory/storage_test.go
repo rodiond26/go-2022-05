@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	storage "github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage"
+	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +17,7 @@ var (
 	end1, end2, end3          time.Time
 	notify1, notify2, notify3 time.Time
 
-	event1, event2, event3 storage.Event
+	event1, event2, event3 model.Event
 )
 
 func TestStorage1(t *testing.T) {
@@ -272,20 +272,20 @@ func TestStorage2(t *testing.T) {
 	})
 }
 
-func initFirstEvent() (event storage.Event, err error) {
+func initFirstEvent() (event model.Event, err error) {
 	start1, err = toTime("2022.10.16 13:06")
 	if err != nil {
-		return storage.Event{}, err
+		return model.Event{}, err
 	}
 	end1, err = toTime("2022.10.16 13:26")
 	if err != nil {
-		return storage.Event{}, err
+		return model.Event{}, err
 	}
 	notify1, err = toTime("2022.10.16 12:36")
 	if err != nil {
-		return storage.Event{}, err
+		return model.Event{}, err
 	}
-	event1 = storage.Event{
+	event1 = model.Event{
 		ID:               1,
 		Title:            "test event 1",
 		StartDate:        start1,
@@ -298,20 +298,20 @@ func initFirstEvent() (event storage.Event, err error) {
 	return event1, nil
 }
 
-func initSecondEvent() (event storage.Event, err error) {
+func initSecondEvent() (event model.Event, err error) {
 	start2, err = toTime("2022.10.16 16:16")
 	if err != nil {
-		return storage.Event{}, err
+		return model.Event{}, err
 	}
 	end2, err = toTime("2022.10.16 16:36")
 	if err != nil {
-		return storage.Event{}, err
+		return model.Event{}, err
 	}
 	notify2, err = toTime("2022.10.16 15:36")
 	if err != nil {
-		return storage.Event{}, err
+		return model.Event{}, err
 	}
-	event2 = storage.Event{
+	event2 = model.Event{
 		ID:               2,
 		Title:            "test event 2",
 		StartDate:        start2,
@@ -324,20 +324,20 @@ func initSecondEvent() (event storage.Event, err error) {
 	return event2, nil
 }
 
-func initThirdEvent() (event storage.Event, err error) {
+func initThirdEvent() (event model.Event, err error) {
 	start3, err = toTime("2022.10.16 16:25")
 	if err != nil {
-		return storage.Event{}, err
+		return model.Event{}, err
 	}
 	end3, err = toTime("2022.10.16 16:50")
 	if err != nil {
-		return storage.Event{}, err
+		return model.Event{}, err
 	}
 	notify3, err = toTime("2022.10.16 16:00")
 	if err != nil {
-		return storage.Event{}, err
+		return model.Event{}, err
 	}
-	event3 = storage.Event{
+	event3 = model.Event{
 		ID:               3,
 		Title:            "test event 3",
 		StartDate:        start3,

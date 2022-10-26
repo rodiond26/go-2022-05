@@ -1,20 +1,19 @@
-package internalhttp
+package httpServer
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/app"
 )
 
 type Server struct {
 	httpServer *http.Server
 	logger     Logger
-	router     *httprouter.Router
-	app        app.App
+	router     *mux.Router
+	app        *app.App
 }
 
 type Logger interface {
@@ -24,31 +23,25 @@ type Logger interface {
 	Debug(msg string)
 }
 
-type Application interface { // TODO
-}
-
-func NewServer(logger Logger, app app.App) *Server {
-	server := &Server{
+func NewServer(logger Logger, app *app.App) *Server {
+	s := &Server{
 		logger: logger,
-		router: httprouter.New(),
+		router: mux.NewRouter(),
 		app:    app,
 	}
+	s.router.Use(LoggingMiddleware(s.logger))
 
-	server.router.GET("/", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		logger.Info(fmt.Sprintf("%s [%s] %s %s %s %d \"%s\"",
-			request.RemoteAddr,
-			time.Now().Format("2006-01-02 15:04:05 -0700"),
-			request.Method,
-			request.URL.Path,
-			request.Proto,
-			http.StatusOK,
-			request.UserAgent(),
-		))
-		text := "Calendar application is running ..."
-		fmt.Fprint(writer, text)
-	})
+	s.router.HandleFunc("/events/{id}", s.findEventByID).Methods("GET")
+	s.router.HandleFunc("/events", s.addEvent).Methods("POST")
+	s.router.HandleFunc("/events/{id}", s.updateEvent).Methods("PUT")
+	s.router.HandleFunc("/events/{id}", s.deleteEventByID).Methods("DELETE")
 
-	return server
+	s.router.HandleFunc("/events", s.findAllEvents).Methods("GET")            // TODO fix
+	s.router.HandleFunc("/events/day", s.findEventsByPeriod).Methods("GET")   // TODO fix
+	s.router.HandleFunc("/events/week", s.findEventsByPeriod).Methods("GET")  // TODO fix
+	s.router.HandleFunc("/events/month", s.findEventsByPeriod).Methods("GET") // TODO fix
+
+	return s
 }
 
 func (s *Server) Start(ctx context.Context, addr string) error {
