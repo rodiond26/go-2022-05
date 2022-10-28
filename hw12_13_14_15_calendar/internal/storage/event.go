@@ -20,5 +20,8 @@ type Storage interface {
 	DeleteEventByID(ctx context.Context, id int64) (err error)
 
 	FindEventsByPeriod(ctx context.Context, startDate, endDate time.Time) (events []model.Event, err error)
+	FindEventsByDay(ctx context.Context, startDate time.Time) (events []model.Event, err error)
+	FindEventsByWeek(ctx context.Context, startDate time.Time) (events []model.Event, err error)
+	FindEventsByMonth(ctx context.Context, startDate time.Time) (events []model.Event, err error)
 	Close(ctx context.Context) (err error)
 }

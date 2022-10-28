@@ -31,15 +31,13 @@ func NewServer(logger Logger, app *app.App) *Server {
 	}
 	s.router.Use(LoggingMiddleware(s.logger))
 
+	s.router.HandleFunc("/events/day", s.findEventsByDay).Methods("GET")
+	s.router.HandleFunc("/events/week", s.findEventsByWeek).Methods("GET")
+	s.router.HandleFunc("/events/month", s.findEventsByMonth).Methods("GET")
 	s.router.HandleFunc("/events/{id}", s.findEventByID).Methods("GET")
 	s.router.HandleFunc("/events", s.addEvent).Methods("POST")
 	s.router.HandleFunc("/events/{id}", s.updateEvent).Methods("PUT")
 	s.router.HandleFunc("/events/{id}", s.deleteEventByID).Methods("DELETE")
-
-	s.router.HandleFunc("/events", s.findAllEvents).Methods("GET")            // TODO fix
-	s.router.HandleFunc("/events/day", s.findEventsByPeriod).Methods("GET")   // TODO fix
-	s.router.HandleFunc("/events/week", s.findEventsByPeriod).Methods("GET")  // TODO fix
-	s.router.HandleFunc("/events/month", s.findEventsByPeriod).Methods("GET") // TODO fix
 
 	return s
 }

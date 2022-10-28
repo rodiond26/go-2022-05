@@ -29,6 +29,9 @@ type Application interface {
 	UpdateEvent(ctx context.Context, event *model.Event) (err error)
 	DeleteEventByID(ctx context.Context, id int64) (err error)
 	FindEventsByPeriod(ctx context.Context, startDate, endDate time.Time) (events []model.Event, err error)
+	FindEventsByDay(ctx context.Context, startDate time.Time) (events []model.Event, err error)
+	FindEventsByWeek(ctx context.Context, startDate time.Time) (events []model.Event, err error)
+	FindEventsByMonth(ctx context.Context, startDate time.Time) (events []model.Event, err error)
 }
 
 func New(logger Logger, storage storage.Storage) *App {
@@ -79,4 +82,16 @@ func (a *App) DeleteEventByID(ctx context.Context, id int64) (err error) {
 
 func (a *App) FindEventsByPeriod(ctx context.Context, startDate time.Time) ([]model.Event, error) {
 	return a.storage.FindEventsByPeriod(ctx, startDate, startDate)
+}
+
+func (a *App) FindEventsByDay(ctx context.Context, startDate time.Time) (events []model.Event, err error) {
+	return a.storage.FindEventsByDay(ctx, startDate)
+}
+
+func (a *App) FindEventsByWeek(ctx context.Context, startDate time.Time) (events []model.Event, err error) {
+	return a.storage.FindEventsByWeek(ctx, startDate)
+}
+
+func (a *App) FindEventsByMonth(ctx context.Context, startDate time.Time) (events []model.Event, err error) {
+	return a.storage.FindEventsByMonth(ctx, startDate)
 }

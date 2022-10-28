@@ -24,7 +24,6 @@ func (s *Server) findEventByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(ct, aj)
 	params := mux.Vars(r)
 	eventID, err := strconv.ParseInt(params["id"], 10, 64)
-	fmt.Printf(">>> params[id] = [%v]\n", params["id"]) // TODO delete
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("error to get request body: %v", err))
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -109,7 +108,6 @@ func (s *Server) deleteEventByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(ct, aj)
 	params := mux.Vars(r)
 	eventID, err := strconv.ParseInt(params["id"], 10, 64)
-	fmt.Printf(">>> params[id] = [%v]\n", params["id"]) // TODO delete
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("error to get request body: %v", err))
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -125,33 +123,6 @@ func (s *Server) deleteEventByID(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Server) findAllEvents(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set(ct, aj)
-	params := mux.Vars(r)
-	eventID, err := strconv.ParseInt(params["id"], 10, 64)
-	fmt.Printf(">>> params[id] = [%v]\n", params["id"]) // TODO delete
-	if err != nil {
-		s.logger.Error(fmt.Sprintf("error to get request body: %v", err))
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	event, err := s.app.FindEventByID(r.Context(), eventID)
-	if err != nil {
-		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-
-	err = json.NewEncoder(w).Encode(event)
-	if err != nil {
-		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-}
-
 func (s *Server) findEventsByPeriod(w http.ResponseWriter, r *http.Request) {
 	var day time.Time
 	err := json.NewDecoder(r.Body).Decode(&day)
@@ -161,6 +132,60 @@ func (s *Server) findEventsByPeriod(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	events, err := s.app.FindEventsByPeriod(r.Context(), day)
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(events)
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) findEventsByDay(w http.ResponseWriter, r *http.Request) {
+	timeNow := time.Now()
+
+	events, err := s.app.FindEventsByDay(r.Context(), timeNow)
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(events)
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) findEventsByWeek(w http.ResponseWriter, r *http.Request) {
+	timeNow := time.Now()
+
+	events, err := s.app.FindEventsByWeek(r.Context(), timeNow)
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(events)
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) findEventsByMonth(w http.ResponseWriter, r *http.Request) {
+	timeNow := time.Now()
+
+	events, err := s.app.FindEventsByMonth(r.Context(), timeNow)
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
 		http.Error(w, err.Error(), http.StatusInternalServerError)

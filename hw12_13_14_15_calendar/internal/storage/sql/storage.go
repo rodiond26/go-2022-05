@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	ErrIsCanceled      = errors.New("search is canceled")
-	ErrIsBusy          = errors.New("time is busy")
-	ErrEventIsNotFound = errors.New("event is not found")
+	ErrIsCanceled       = errors.New("search is canceled")
+	ErrIsBusy           = errors.New("time is busy")
+	ErrEventIsNotFound  = errors.New("event is not found")
+	years, months, days int
 )
 
 const (
@@ -147,4 +148,31 @@ func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) 
 func (s *Storage) Close(ctx context.Context) (err error) {
 	s.PgxPool.Close()
 	return nil
+}
+
+func (s *Storage) FindEventsByDay(ctx context.Context, start time.Time) (events []model.Event, err error) {
+	years = 0
+	months = 0
+	days = 1
+	end := start.AddDate(years, months, days)
+
+	return s.FindEventsByPeriod(ctx, start, end)
+}
+
+func (s *Storage) FindEventsByWeek(ctx context.Context, start time.Time) (events []model.Event, err error) {
+	years = 0
+	months = 0
+	days = 7
+	end := start.AddDate(years, months, days)
+
+	return s.FindEventsByPeriod(ctx, start, end)
+}
+
+func (s *Storage) FindEventsByMonth(ctx context.Context, start time.Time) (events []model.Event, err error) {
+	years = 0
+	months = 1
+	days = 0
+	end := start.AddDate(years, months, days)
+
+	return s.FindEventsByPeriod(ctx, start, end)
 }
