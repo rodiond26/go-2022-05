@@ -15,6 +15,12 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	ct         = "Content-Type"
+	aj         = "application/json"
+	timeLayout = "2006.01.02 15:04:05"
+)
+
 type Server struct {
 	grpcServer *grpc.Server
 	logger     *logger.Logger
@@ -109,32 +115,58 @@ func (s *Server) DeleteEvent(ctx context.Context, e *DeleteEventRequest) (*empty
 	return &empty.Empty{}, nil
 }
 
-func (s *Server) GetAllEvents(ctx context.Context, em *empty.Empty) (*GetAllEventsResponse, error) {
-	return &GetAllEventsResponse{}, nil
+func (s *Server) FindEventsByDay(ctx context.Context, dayDate *FindDayEventsRequest) (*FindDayEventsResponse, error) {
+	d := dayDate.StartDate
+	start, err := unmarshalStringToTime(d)
+	if err != nil {
+		return nil, err
+	}
+	events, err := s.app.FindEventsByDay(ctx, start)
+	if err != nil {
+		return nil, err
+	}
+	res := marshalEvents(events)
+	return &FindDayEventsResponse{Events: res}, nil
 }
 
-func (s *Server) FindDayEvents(ctx context.Context, dayDate *FindDayEventsRequest) (*FindDayEventsResponse, error) {
-	return &FindDayEventsResponse{}, nil
+func (s *Server) FindEventsByWeek(ctx context.Context, weekDay *FindWeekEventsRequest) (*FindWeekEventsResponse, error) {
+	d := weekDay.StartDate
+	start, err := unmarshalStringToTime(d)
+	if err != nil {
+		return nil, err
+	}
+	events, err := s.app.FindEventsByWeek(ctx, start)
+	if err != nil {
+		return nil, err
+	}
+	res := marshalEvents(events)
+	return &FindWeekEventsResponse{Events: res}, nil
 }
 
-func (s *Server) FindWeekEvents(ctx context.Context, weekDay *FindWeekEventsRequest) (*FindWeekEventsResponse, error) {
-	return &FindWeekEventsResponse{}, nil
-}
-
-func (s *Server) FindMonthEvents(ctx context.Context, monthDay *FindMonthEventsRequest) (*FindMonthEventsResponse, error) {
-	return &FindMonthEventsResponse{}, nil
+func (s *Server) FindEventsByMonth(ctx context.Context, monthDay *FindMonthEventsRequest) (*FindMonthEventsResponse, error) {
+	d := monthDay.StartDate
+	start, err := unmarshalStringToTime(d)
+	if err != nil {
+		return nil, err
+	}
+	events, err := s.app.FindEventsByMonth(ctx, start)
+	if err != nil {
+		return nil, err
+	}
+	res := marshalEvents(events)
+	return &FindMonthEventsResponse{Events: res}, nil
 }
 
 func unmarshalEvent(e *Event) (event *model.Event, err error) {
-	startDate, err := unmarshalJSONToTime(e.StartDate)
+	startDate, err := unmarshalStringToTime(e.StartDate)
 	if err != nil {
 		return event, err
 	}
-	endDate, err := unmarshalJSONToTime(e.EndDate)
+	endDate, err := unmarshalStringToTime(e.EndDate)
 	if err != nil {
 		return event, err
 	}
-	notificationDate, err := unmarshalJSONToTime(e.EndDate)
+	notificationDate, err := unmarshalStringToTime(e.EndDate)
 	if err != nil {
 		return event, err
 	}
@@ -151,9 +183,9 @@ func unmarshalEvent(e *Event) (event *model.Event, err error) {
 }
 
 func marshalEvent(e *model.Event) *Event {
-	startDate := marshalTimeToJSON(e.StartDate)
-	endDate := marshalTimeToJSON(e.EndDate)
-	notificationDate := marshalTimeToJSON(e.EndDate)
+	startDate := marshalTimeToString(e.StartDate)
+	endDate := marshalTimeToString(e.EndDate)
+	notificationDate := marshalTimeToString(e.EndDate)
 
 	return &Event{
 		Id:          e.ID,
@@ -166,20 +198,22 @@ func marshalEvent(e *model.Event) *Event {
 	}
 }
 
-func unmarshalJSONToTime(str string) (time.Time, error) {
+func unmarshalStringToTime(str string) (time.Time, error) {
 	s := strings.Trim(str, `"`) // remove quotes
 	return time.Parse(timeLayout, s)
 }
 
-func marshalTimeToJSON(t time.Time) (str string) {
+func marshalTimeToString(t time.Time) (str string) {
 	if t.IsZero() {
 		return ""
 	}
 	return fmt.Sprintf(`"%s"`, t.Format(timeLayout))
 }
 
-const (
-	ct         = "Content-Type"
-	aj         = "application/json"
-	timeLayout = "2006.01.02 15:04:05"
-)
+func marshalEvents(e []model.Event) (events []*Event) {
+	for _, event := range e {
+		events = append(events, marshalEvent(&event))
+	}
+
+	return events
+}

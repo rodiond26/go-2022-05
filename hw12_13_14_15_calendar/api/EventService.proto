@@ -17,15 +17,14 @@ message Event {
 }
 
 service Calendar {
+    rpc FindEventsByDay(FindDayEventsRequest) returns (FindDayEventsResponse);
+    rpc FindEventsByWeek(FindWeekEventsRequest) returns (FindWeekEventsResponse);
+    rpc FindEventsByMonth(FindMonthEventsRequest) returns (FindMonthEventsResponse);
+    rpc GetEventByID(GetEventByIDRequest) returns (GetEventByIDResponse);
     rpc CreateEvent(AddEventRequest) returns (AddEventResponse);
     rpc UpdateEvent(EventUpdateRequest) returns (google.protobuf.Empty);
     rpc DeleteEvent(DeleteEventRequest) returns (google.protobuf.Empty);
-    rpc GetAllEvents(google.protobuf.Empty) returns (GetAllEventsResponse);
-    rpc GetEventByID(GetEventByIDRequest) returns (GetEventByIDResponse);
-    rpc FindDayEvents(FindDayEventsRequest) returns (FindDayEventsResponse);
-    rpc FindWeekEvents(FindWeekEventsRequest) returns (FindWeekEventsResponse);
-    rpc FindMonthEvents(FindMonthEventsRequest) returns (FindMonthEventsResponse);
-  }
+}
 
 message AddEventRequest {
     Event event = 1;
@@ -57,15 +56,15 @@ message GetAllEventsResponse {
 }
   
 message FindDayEventsRequest {
-    int64 id = 1;
+    string start_date = 1;
 }
   
 message FindDayEventsResponse {
-    int64 id = 1;
+    repeated Event events = 1;
 }
   
 message FindWeekEventsRequest {
-    int64 id = 1;
+    string start_date = 1;
 }
   
 message FindWeekEventsResponse {
@@ -73,7 +72,7 @@ message FindWeekEventsResponse {
 }
   
 message FindMonthEventsRequest {
-    int64 id = 1;
+    string start_date = 1;
 }
   
 message FindMonthEventsResponse {
