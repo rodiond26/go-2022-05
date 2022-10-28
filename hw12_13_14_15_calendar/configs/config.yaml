@@ -12,7 +12,8 @@ storage:
 
 server:
   host: 127.0.0.1
-  port: 8000
+  httpPort: 8000
+  grpcPort: 9000
 
 db:
   username: postgres

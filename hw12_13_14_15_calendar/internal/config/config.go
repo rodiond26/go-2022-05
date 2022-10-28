@@ -22,8 +22,9 @@ type LoggerConfig struct {
 }
 
 type ServerConfig struct {
-	Host string `yaml:"host"`
-	Port string `yaml:"port"`
+	Host     string `yaml:"host"`
+	HttpPort string `yaml:"httpPort"`
+	GrpcPort string `yaml:"grpcPort"`
 }
 
 func NewConfig() Config {
