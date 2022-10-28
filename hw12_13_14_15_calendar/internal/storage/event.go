@@ -3,17 +3,9 @@ package storage
 import (
 	"context"
 	"time"
-)
 
-type Event struct {
-	ID               int64
-	Title            string
-	StartDate        time.Time
-	EndDate          time.Time
-	Description      string
-	UserID           int64
-	NotificationDate time.Time
-}
+	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/model"
+)
 
 type User struct {
 	ID          int64
@@ -22,13 +14,14 @@ type User struct {
 }
 
 type Storage interface {
-	// Connect(ctx context.Context, dsn string) (pool *pgxpool.Pool, err error)
-
-	AddEvent(ctx context.Context, newEvent *Event) (id int64, err error)
-	FindEventByID(ctx context.Context, id int64) (event Event, err error)
-	UpdateEvent(ctx context.Context, event *Event) (err error)
+	AddEvent(ctx context.Context, newEvent *model.Event) (id int64, err error)
+	FindEventByID(ctx context.Context, id int64) (event model.Event, err error)
+	UpdateEvent(ctx context.Context, event *model.Event) (err error)
 	DeleteEventByID(ctx context.Context, id int64) (err error)
 
-	FindEventsByPeriod(ctx context.Context, startDate, endDate time.Time) (events []Event, err error)
+	FindEventsByPeriod(ctx context.Context, startDate, endDate time.Time) (events []model.Event, err error)
+	FindEventsByDay(ctx context.Context, startDate time.Time) (events []model.Event, err error)
+	FindEventsByWeek(ctx context.Context, startDate time.Time) (events []model.Event, err error)
+	FindEventsByMonth(ctx context.Context, startDate time.Time) (events []model.Event, err error)
 	Close(ctx context.Context) (err error)
 }

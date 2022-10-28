@@ -14,7 +14,7 @@ build-img:
 	docker build \
 		--build-arg=LDFLAGS="$(LDFLAGS)" \
 		-t $(DOCKER_IMG) \
-		-f build/Dockerfile .
+		-f build/calendar/Dockerfile .
 
 run-img: build-img
 	docker run $(DOCKER_IMG)
@@ -31,4 +31,13 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build run build-img run-img version test lint
+up:
+	docker-compose up -d --build
+
+down:
+	docker-compose down
+
+generate:
+	go generate ./...
+
+.PHONY: build run build-img run-img version test lint up down generate

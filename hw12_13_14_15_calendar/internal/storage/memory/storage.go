@@ -6,13 +6,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/storage"
+	"github.com/rodiond26/go-2022-05/hw12_13_14_15_calendar/internal/model"
 )
 
 var (
-	ErrIsCanceled      = errors.New("search is canceled")
-	ErrIsBusy          = errors.New("time is busy")
-	ErrEventIsNotFound = errors.New("event is not found")
+	ErrIsCanceled       = errors.New("search is canceled")
+	ErrIsBusy           = errors.New("time is busy")
+	ErrEventIsNotFound  = errors.New("event is not found")
+	years, months, days int
 )
 
 const (
@@ -21,17 +22,17 @@ const (
 
 type Storage struct {
 	mu     sync.RWMutex
-	events map[int64]storage.Event
+	events map[int64]model.Event
 }
 
 func New() *Storage {
 	return &Storage{
 		mu:     sync.RWMutex{},
-		events: make(map[int64]storage.Event),
+		events: make(map[int64]model.Event),
 	}
 }
 
-func (s *Storage) AddEvent(ctx context.Context, newEvent *storage.Event) (id int64, err error) {
+func (s *Storage) AddEvent(ctx context.Context, newEvent *model.Event) (id int64, err error) {
 	select {
 	case <-ctx.Done():
 		return invalidID, ErrIsCanceled
@@ -53,7 +54,7 @@ func (s *Storage) AddEvent(ctx context.Context, newEvent *storage.Event) (id int
 	return id, nil
 }
 
-func (s *Storage) FindEventByID(ctx context.Context, id int64) (event storage.Event, err error) {
+func (s *Storage) FindEventByID(ctx context.Context, id int64) (event model.Event, err error) {
 	select {
 	case <-ctx.Done():
 		return event, ErrIsCanceled
@@ -68,7 +69,7 @@ func (s *Storage) FindEventByID(ctx context.Context, id int64) (event storage.Ev
 	return event, ErrEventIsNotFound
 }
 
-func (s *Storage) UpdateEvent(ctx context.Context, updatedEvent *storage.Event) (err error) {
+func (s *Storage) UpdateEvent(ctx context.Context, updatedEvent *model.Event) (err error) {
 	select {
 	case <-ctx.Done():
 		return ErrIsCanceled
@@ -100,8 +101,8 @@ func (s *Storage) DeleteEventByID(ctx context.Context, id int64) (err error) {
 	return nil
 }
 
-func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) (events []storage.Event, err error) {
-	events = make([]storage.Event, 0)
+func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) (events []model.Event, err error) {
+	events = make([]model.Event, 0)
 	select {
 	case <-ctx.Done():
 		return nil, ErrIsCanceled
@@ -120,4 +121,31 @@ func (s *Storage) FindEventsByPeriod(ctx context.Context, start, end time.Time) 
 
 func (s *Storage) Close(ctx context.Context) error {
 	return nil
+}
+
+func (s *Storage) FindEventsByDay(ctx context.Context, start time.Time) (events []model.Event, err error) {
+	years = 0
+	months = 0
+	days = 1
+	end := start.AddDate(years, months, days)
+
+	return s.FindEventsByPeriod(ctx, start, end)
+}
+
+func (s *Storage) FindEventsByWeek(ctx context.Context, start time.Time) (events []model.Event, err error) {
+	years = 0
+	months = 0
+	days = 7
+	end := start.AddDate(years, months, days)
+
+	return s.FindEventsByPeriod(ctx, start, end)
+}
+
+func (s *Storage) FindEventsByMonth(ctx context.Context, start time.Time) (events []model.Event, err error) {
+	years = 0
+	months = 1
+	days = 0
+	end := start.AddDate(years, months, days)
+
+	return s.FindEventsByPeriod(ctx, start, end)
 }
