@@ -15,11 +15,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	ct         = "Content-Type"
-	aj         = "application/json"
-	timeLayout = "2006.01.02 15:04:05"
-)
+const timeLayout = "2006.01.02 15:04:05"
 
 type Server struct {
 	grpcServer *grpc.Server
@@ -50,7 +46,6 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 }
 
 func (s *Server) mustEmbedUnimplementedCalendarServer() {
-
 }
 
 func (s *Server) Stop(ctx context.Context) error {
@@ -60,10 +55,10 @@ func (s *Server) Stop(ctx context.Context) error {
 }
 
 func loggingServerInterceptor(logger app.Logger) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (_ interface{}, err error) {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (_ interface{}, err error) { //nolint:lll
 		logger.Info(fmt.Sprintf("method: %s, duration: %s, request: %+v", info.FullMethod, time.Since(time.Now()), req))
-		h, err := handler(ctx, req)
-		return h, err
+		i, err := handler(ctx, req)
+		return i, err
 	}
 }
 
@@ -129,7 +124,7 @@ func (s *Server) FindEventsByDay(ctx context.Context, dayDate *FindDayEventsRequ
 	return &FindDayEventsResponse{Events: res}, nil
 }
 
-func (s *Server) FindEventsByWeek(ctx context.Context, weekDay *FindWeekEventsRequest) (*FindWeekEventsResponse, error) {
+func (s *Server) FindEventsByWeek(ctx context.Context, weekDay *FindWeekEventsRequest) (*FindWeekEventsResponse, error) { //nolint:lll
 	d := weekDay.StartDate
 	start, err := unmarshalStringToTime(d)
 	if err != nil {
@@ -143,7 +138,7 @@ func (s *Server) FindEventsByWeek(ctx context.Context, weekDay *FindWeekEventsRe
 	return &FindWeekEventsResponse{Events: res}, nil
 }
 
-func (s *Server) FindEventsByMonth(ctx context.Context, monthDay *FindMonthEventsRequest) (*FindMonthEventsResponse, error) {
+func (s *Server) FindEventsByMonth(ctx context.Context, monthDay *FindMonthEventsRequest) (*FindMonthEventsResponse, error) { //nolint:lll
 	d := monthDay.StartDate
 	start, err := unmarshalStringToTime(d)
 	if err != nil {
@@ -212,8 +207,9 @@ func marshalTimeToString(t time.Time) (str string) {
 
 func marshalEvents(e []model.Event) (events []*Event) {
 	for _, event := range e {
-		events = append(events, marshalEvent(&event))
+		ev := event
+		me := marshalEvent(&ev)
+		events = append(events, me)
 	}
-
 	return events
 }

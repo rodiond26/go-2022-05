@@ -7,13 +7,8 @@ services:
       dockerfile: build/calendar/Dockerfile
     ports:
       - "8000:8000"
-  #    - "8090:8090"
     depends_on:
       - database
-   # volumes:
-   #   - "./configs/calendar/config.yml:/app/config.yml"
-   #   - "./logs/calendar/:/app/logs/"
-   #   - "./migrations/:/app/migrations"
   database:
     image: postgres:13.8-alpine
     environment:

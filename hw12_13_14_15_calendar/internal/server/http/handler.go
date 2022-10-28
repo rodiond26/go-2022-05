@@ -1,4 +1,4 @@
-package httpServer
+package http
 
 import (
 	"context"
@@ -123,29 +123,6 @@ func (s *Server) deleteEventByID(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Server) findEventsByPeriod(w http.ResponseWriter, r *http.Request) {
-	var day time.Time
-	err := json.NewDecoder(r.Body).Decode(&day)
-	if err != nil {
-		s.logger.Error(fmt.Sprintf("error to get request body: %v", err))
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	events, err := s.app.FindEventsByPeriod(r.Context(), day)
-	if err != nil {
-		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err = json.NewEncoder(w).Encode(events)
-	if err != nil {
-		s.logger.Error(fmt.Sprintf("error to get list of events: %v", err))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-}
-
 func (s *Server) findEventsByDay(w http.ResponseWriter, r *http.Request) {
 	timeNow := time.Now()
 
@@ -225,30 +202,7 @@ func unmarshalEvent(e *dto.EventDto) (event *model.Event, err error) {
 	}, nil
 }
 
-func marshalEvent(e *model.Event) *dto.EventDto {
-	startDate := marshalTimeToJSON(e.StartDate)
-	endDate := marshalTimeToJSON(e.EndDate)
-	notificationDate := marshalTimeToJSON(e.EndDate)
-
-	return &dto.EventDto{
-		ID:               e.ID,
-		Title:            e.Title,
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Description:      e.Description,
-		UserID:           e.UserID,
-		NotificationDate: notificationDate,
-	}
-}
-
 func unmarshalJSONToTime(str string) (time.Time, error) {
 	s := strings.Trim(str, `"`) // remove quotes
 	return time.Parse(timeLayout, s)
-}
-
-func marshalTimeToJSON(t time.Time) (str string) {
-	if t.IsZero() {
-		return ""
-	}
-	return fmt.Sprintf(`"%s"`, t.Format(timeLayout))
 }

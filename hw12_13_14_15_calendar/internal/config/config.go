@@ -23,7 +23,7 @@ type LoggerConfig struct {
 
 type ServerConfig struct {
 	Host     string `yaml:"host"`
-	HttpPort string `yaml:"httpPort"`
+	HTTPPort string `yaml:"httpPort"`
 	GrpcPort string `yaml:"grpcPort"`
 }
 
